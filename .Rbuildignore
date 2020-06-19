@@ -1,0 +1,10 @@
+^LICENSE\.md$
+\.Rhistory
+\.RData
+\.Rproj\.user
+^Makefile$
+^make_err\.awk$
+^README\.Rmd$
+^\.travis\.yml$
+^.*\.Rproj$
+^\.Rproj\.user$

@@ -1,0 +1,538 @@
+        
+
+
+setClass("Iter",
+         contains = "VIRTUAL")
+
+validity_IterCohort <- function(object) {
+    dim_self <- object@dim_self
+    i_time_self <- object@i_time_self
+    i_age_self <- object@i_age_self
+    i_triangle_self <- object@i_triangle_self
+    strides_self <- object@strides_self
+    stop_at_oldest <- object@stop_at_oldest
+    offsets <- object@offsets
+    n_offsets <- object@n_offsets
+    ## 'dim_self'
+    val <- demcheck::chk_positive_dim(x = dim_self,
+                                      name = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_time_self'
+    val <- demcheck::chk_positive_scalar(x = i_time_self,
+                                         name = "i_time_self",
+                                         null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ##' i_age_self'
+    val <- demcheck::chk_non_negative_scalar(x = i_age_self,
+                                             name = "i_age_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_triangle_self'
+    val <- demcheck::chk_non_negative_scalar(x = i_triangle_self,
+                                             name = "i_triangle_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_self'
+    val <- demcheck::chk_positive_vector(x = strides_self,
+                                         name = "strides_self")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = strides_self,
+                                             name = "strides_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'stop_at_oldest'
+    val <- demcheck::chk_length_1(x = stop_at_oldest,
+                                  name = "stop_at_oldest")
+    if (!isTRUE(val))
+        return(val)
+    ## 'offsets'
+    val <- demcheck::chk_non_negative_vector(x = offsets,
+                                             name = "offsets")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = offsets,
+                                             name = "offsets")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_offsets'
+    val <- demcheck::chk_positive_scalar(x = n_offsets,
+                                         name = "n_offsets")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_time_self' and 'dim_self'
+    val <- demcheck::chk_le_scalar(x1 = i_time_self,
+                                   x2 = length(dim_self),
+                                   name1 = "i_time_self",
+                                   name2 = "length(dim_self)")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_age_self' and 'dim_self'
+    val <- demcheck::chk_le_scalar(x1 = i_age_self,
+                                   x2 = length(dim_self),
+                                   name1 = "i_age_self",
+                                   name2 = "length(dim_self)")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_triangle_self' and 'dim_self'
+    val <- demcheck::chk_le_scalar(x1 = i_triangle_self,
+                                   x2 = length(dim_self),
+                                   name1 = "i_triangle_self",
+                                   name2 = "length(dim_self)")
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_self' and 'dim_self'
+    val <- demcheck::chk_length_same(x1 = strides_self,
+                                     x2 = dim_self,
+                                     name1 = "strides_self",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    if (!identical(strides_self, make_strides(dim_self)))
+        return(gettextf("'%s' not identical to '%s'",
+                        "strides_self", "make_strides(dim_self)"))
+    val <- demcheck::chk_le_scalar(x1 = i_triangle_self,
+                                   x2 = length(dim_self),
+                                   name1 = "i_triangle_self",
+                                   name2 = "length(dim_self)")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_triangle_self' and 'i_age_self'
+    val <- demcheck::chk_zero_if_zero(x1 = i_triangle_self,
+                                      x2 = i_age_self,
+                                      name1 = "i_triangle_self",
+                                      name2 = "i_age_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_time_self', 'i_age_self', 'i_triangle_self'
+    val <- demcheck::chk_indices_distinct(indices = list(i_time_self,
+                                                         i_age_self,
+                                                         i_triangle_self),
+                                          names = c("i_time_self",
+                                                    "i_age_self",
+                                                    "i_triangle_self"),
+                                          exclude_zero = TRUE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'stop_at_oldest' and 'i_age_self'
+    if (i_age_self == 0L)
+        val <- demcheck::chk_is_na_scalar(x = stop_at_oldest,
+                                          name = "stop_at_oldest")
+    else
+        val <- demcheck::chk_is_logical_flag(x = stop_at_oldest,
+                                             name = "stop_at_oldest")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_offsets' and 'offsets'
+    val <- demcheck::chk_length_equals(x1 = offsets,
+                                       x2 = n_offsets,
+                                       name1 = "offsets",
+                                       name2 = "n_offsets")
+    if (!isTRUE(val))
+        return(val)
+    TRUE    
+}
+
+
+setClass("IterCohort",
+         contains = "Iter",
+         slots = c(dim_self = "integer",
+                   i_time_self = "integer",
+                   i_age_self = "integer",
+                   i_triangle_self = "integer",
+                   strides_self = "integer",
+                   stop_at_oldest = "logical",
+                   offsets = "integer",
+                   n_offsets = "integer"),
+         validity = validity_IterCohort)
+
+
+
+
+validity_IterCollapse <- function(object) {
+    pos_self <- object@pos_self
+    pos_oth <- object@pos_oth
+    dim_self <- object@dim_self
+    n_dim_self <- object@n_dim_self
+    n_dim_oth <- object@n_dim_oth
+    map_dim <- object@map_dim
+    map_pos <- object@map_pos
+    strides_oth <- object@strides_oth
+    offsets <- object@offsets
+    n_offsets <- object@n_offsets
+    ## 'pos_self'
+    val <- demcheck::chk_pos_initial(x = pos_self,
+                                     name = "pos_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'pos_oth'
+    val <- demcheck::chk_pos_initial(x = pos_oth,
+                                     name = "pos_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'dim_self'
+    val <- demcheck::chk_positive_dim(x = dim_self,
+                                      name = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_self'
+    val <- demcheck::chk_positive_scalar(x = n_dim_self,
+                                         name = "n_dim_self",
+                                         null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_oth'
+    val <- demcheck::chk_positive_scalar(x = n_dim_oth,
+                                         name = "n_dim_oth",
+                                         null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim'
+    val <- demcheck::chk_map_dim(x = map_dim,
+                                 name = "map_dim")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_pos'
+    val <- demcheck::chk_map_pos(x = map_pos,
+                                 name = "map_pos")
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_oth'
+    val <- demcheck::chk_positive_vector(x = strides_oth,
+                                         name = "strides_oth")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = strides_oth,
+                                             name = "strides_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'offsets'
+    val <- demcheck::chk_non_negative_vector(x = offsets,
+                                             name = "offsets")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = offsets,
+                                             name = "offsets")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_offsets'
+    val <- demcheck::chk_positive_scalar(x = n_offsets,
+                                         name = "n_offsets")
+    if (!isTRUE(val))
+        return(val)
+    ## 'dim_self' and 'pos_self'
+    val <- demcheck::chk_length_same(x1 = pos_self,
+                                     x2 = dim_self,
+                                     name1 = "pos_self",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_lt_vector(x1 = pos_self,
+                                   x2 = dim_self,
+                                   name1 = "pos_self",
+                                   name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_self' and 'dim_self'
+    val <- demcheck::chk_length_equals(x1 = dim_self,
+                                       x2 = n_dim_self,
+                                       name1 = "dim_self",
+                                       name2 = "n_dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_oth' and 'pos_oth'
+    val <- demcheck::chk_length_equals(x1 = pos_oth,
+                                       x2 = n_dim_oth,
+                                       name1 = "pos_oth",
+                                       name2 = "n_dim_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim' and 'dim_self'
+    val <- demcheck::chk_length_same(x1 = map_dim,
+                                     x2 = dim_self,
+                                     name1 = "map_dim",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim' and 'n_dim_self'
+    val <- demcheck::chk_all_x1_in_x2(x1 = map_dim,
+                                      x2 = seq_len(n_dim_self),
+                                      name1 = "map_dim",
+                                      name2 = "seq_len(n_dim_self)",
+                                      exclude_zero = TRUE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_pos' and 'dim_self'
+    val <- demcheck::chk_length_same(x1 = map_pos,
+                                     x2 = dim_self,
+                                     name1 = "map_pos",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_lengths_elements_equal_vec(x1 = map_pos,
+                                                    x2 = dim_self,
+                                                    name1 = "map_pos",
+                                                    name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_pos' and 'map_dim'
+    for (i in seq_along(map_pos)) {
+        val_map_pos <- map_pos[[i]]
+        val_map_dim <- map_dim[[i]]
+        if (val_map_dim > 0L) {
+            if (all(val_map_pos == 0L)) {
+                return(gettextf("element %d of '%s' equals %d but element %d of '%s' has no non-zero values",
+                                i, "map_dim", val_map_dim, i, "map_pos"))
+            }
+        }
+        else {
+            if (any(val_map_pos != 0L)) {
+                return(gettextf("element %d of '%s' equals %d but element %d of '%s' has non-zero values",
+                                i, "map_dim", val_map_dim, i, "map_pos"))
+            }
+        }
+    }
+    ## 'strides_oth' and 'n_dim_oth'
+    val <- demcheck::chk_length_equals(x1 = strides_oth,
+                                       x2 = n_dim_oth,
+                                       name1 = "strides_oth",
+                                       name2 = "n_dim_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_offsets' and 'offsets'
+    val <- demcheck::chk_length_equals(x1 = offsets,
+                                       x2 = n_offsets,
+                                       name1 = "offsets",
+                                       name2 = "n_offsets")
+    if (!isTRUE(val))
+        return(val)
+    TRUE    
+}
+
+
+setClass("IterCollapse",
+         contains = "Iter",
+         slots = c(pos_self = "integer",
+                   pos_oth = "integer",
+                   dim_self = "integer",
+                   n_dim_self = "integer",
+                   n_dim_oth = "integer",
+                   map_dim = "integer",
+                   map_pos = "list",
+                   strides_oth = "integer",
+                   offsets = "integer",
+                   n_offsets = "integer"),
+         validity = validity_IterCollapse)
+
+
+validity_IterIncrement <- function(object) {
+    pos_self <- object@pos_self
+    pos_oth <- object@pos_oth
+    dim_self <- object@dim_self
+    n_dim_self <- object@n_dim_self
+    n_dim_oth <- object@n_dim_oth
+    map_dim <- object@map_dim
+    strides_self <- object@strides_self
+    strides_oth <- object@strides_oth
+    i_comp_type_self <- object@i_comp_type_self
+    i_triangle_self = object@i_triangle_self
+    indices_orig_self = object@indices_orig_self
+    indices_dest_self = object@indices_dest_self
+    n_orig_dest_self = object@n_orig_dest_self
+    i_direction_self = object@i_direction_self
+    ## 'pos_self'
+    val <- demcheck::chk_pos_initial(x = pos_self,
+                                     name = "pos_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'pos_oth'
+    val <- demcheck::chk_pos_initial(x = pos_oth,
+                                     name = "pos_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'dim_self'
+    val <- demcheck::chk_positive_dim(x = dim_self,
+                                      name = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_self'
+    val <- demcheck::chk_positive_scalar(x = n_dim_self,
+                                         name = "n_dim_self",
+                                         null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_oth'
+    val <- demcheck::chk_positive_scalar(x = n_dim_oth,
+                                         name = "n_dim_oth",
+                                         null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim'
+    val <- demcheck::chk_map_dim(x = map_dim,
+                                 name = "map_dim")
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_self'
+    val <- demcheck::chk_positive_vector(x = strides_self,
+                                         name = "strides_self")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = strides_self,
+                                             name = "strides_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_oth'
+    val <- demcheck::chk_positive_vector(x = strides_oth,
+                                         name = "strides_oth")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_strictly_increasing(x = strides_oth,
+                                             name = "strides_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_comp_type_self'
+    val <- demcheck::chk_positive_scalar(x = i_comp_type_self,
+                                         name = "i_comp_type_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_triangle_self'
+    val <- demcheck::chk_non_negative_scalar(x = i_triangle_self,
+                                             name = "i_triangle_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'indices_orig_self'
+    val <- demcheck::chk_non_negative_vector(x = indices_orig_self,
+                                             name = "indices_orig_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'indices_orig_dest'
+    val <- demcheck::chk_non_negative_vector(x = indices_orig_dest,
+                                             name = "indices_orig_dest",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_orig_dest_self'
+    val <- demcheck::chk_non_negative_scalar(x = n_orig_dest_self,
+                                             name = "n_orig_dest_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_direction_self'
+    val <- demcheck::chk_non_negative_scalar(x = i_direction_self,
+                                             name = "i_direction_self",
+                                             null_ok = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'dim_self' and 'pos_self'
+    val <- demcheck::chk_length_same(x1 = pos_self,
+                                     x2 = dim_self,
+                                     name1 = "pos_self",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    val <- demcheck::chk_lt_vector(x1 = pos_self,
+                                   x2 = dim_self,
+                                   name1 = "pos_self",
+                                   name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_self' and 'dim_self'
+    val <- demcheck::chk_length_equals(x1 = dim_self,
+                                       x2 = n_dim_self,
+                                       name1 = "dim_self",
+                                       name2 = "n_dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'n_dim_oth' and 'pos_oth'
+    val <- demcheck::chk_length_equals(x1 = pos_oth,
+                                       x2 = n_dim_oth,
+                                       name1 = "pos_oth",
+                                       name2 = "n_dim_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim' and 'dim_self'
+    val <- demcheck::chk_length_same(x1 = map_dim,
+                                     x2 = dim_self,
+                                     name1 = "map_dim",
+                                     name2 = "dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'map_dim' and 'n_dim_self'
+    val <- demcheck::chk_all_x1_in_x2(x1 = map_dim,
+                                      x2 = seq_len(n_dim_self),
+                                      name1 = "map_dim",
+                                      name2 = "seq_len(n_dim_self)",
+                                      exclude_zero = TRUE)
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_self' and 'n_dim_self'
+    val <- demcheck::chk_length_equals(x1 = strides_self,
+                                       x2 = n_dim_self,
+                                       name1 = "strides_self",
+                                       name2 = "n_dim_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'strides_oth' and 'n_dim_oth'
+    val <- demcheck::chk_length_equals(x1 = strides_oth,
+                                       x2 = n_dim_oth,
+                                       name1 = "strides_oth",
+                                       name2 = "n_dim_oth")
+    if (!isTRUE(val))
+        return(val)
+    ## 'indices_orig_self' and 'indices_dest_self'
+    val <- demcheck::chk_lengths_same(x1 = indices_orig_self,
+                                      x2 = indices_dest_self,
+                                      name1 = "indices_orig_self",
+                                      name2 = "indices_dest_self")
+    if (!isTRUE(val))
+        return(val)
+    ## 'indices_orig_self' and 'n_dim_oth'
+    val <- demcheck::chk_length_equals(x1 = indices_orig_self,
+                                       x2 = n_orig_dest_self,
+                                       name1 = "indices_orig_self",
+                                       name2 = "n_orig_dest")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_triangle_self', 'indices_orig_self', 'indices_dest_self', 'i_direction_self'
+    val <- demcheck::chk_indices_distinct(indices = list(i_triangle_self,
+                                                         indices_orig_self,
+                                                         indices_dest_self,
+                                                         i_direction_self),
+                                          names = c("i_triangle_self",
+                                                    "indices_orig_self",
+                                                    "indices_dest_self",
+                                                    "i_direction_self"),
+                                          exclude_zero = TRUE)
+    if (!isTRUE(val))
+        return(val)
+    TRUE    
+}
+
+setClass("IterIncrement",
+         contains = "Iter",
+         slots = c(pos_self = "integer",
+                   pos_oth = "integer",
+                   dim_self = "integer",
+                   n_dim_self = "integer",
+                   n_dim_oth = "integer",
+                   map_dim = "integer",
+                   strides_self = "integer",
+                   strides_oth = "integer",
+                   i_comp_type_self = "integer",
+                   i_triangle_self = "integer",
+                   indices_orig_self = "integer",
+                   indices_dest_self = "integer",
+                   n_orig_dest_self = "integer",
+                   i_direction_self = "integer"),
+         validity = validity_IterIncrement)
+
+
+
+
+    

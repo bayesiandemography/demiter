@@ -1,0 +1,25 @@
+Package: demiter
+Title: Iterators for Demographic Arrays
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "John",
+           family = "Bryant",
+           role = c("aut", "cre"),
+           email = "john@bayesiandemography.com",
+           comment = c(ORCID = "0000-0002-8010-9748"))
+Description: Iterators for demographic arrays,
+    plus functions for working with these iterators.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    demcheck,
+    methods
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+Remotes:
+    bayesiandemography/demcheck
+RoxygenNote: 7.1.0
+VignetteBuilder: knitr

@@ -1,0 +1,70 @@
+---
+title: "demmap"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{demmap}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+#library(demmap)
+```
+
+
+
+**demmap** is for mappings between arrays.
+
+demmap is a dependency for demarray, and doesn't know about concepts introduced in demarray, eg Values vs Counts, or dimtypes. demmap ignores any dimnames.
+
+demarray can impose extra restrictions on A and B that demmap does not know about.
+
+## Setup
+
+Let $X$ be an array. $X$ has dimensions $d_k, k = 1, \dots, K$. Elements of $X$ can be specified using the $K$-dimensional index $(m_1, \dots, m_K)$, or the one-dimensional index $i$, $1 \le i \lt I = \prod_{k=1}^K d_k$.
+
+Let $s_k = \prod_{v=0}^k d_v$ be the "stride" for the $k$th dimension. Then the $K$-dimensional and one-dimensional indices are related as follows:
+\begin{equation}
+  i - 1 = \sum_{k=1}^K s_k (m_k - 1).
+\end{equation}
+
+
+
+## Arrays A and B
+
+have at least one shared dimension
+A can have dimensions not in B, and B can have dimensions not in A.
+A-shared and B-shared are arrays formed from shared dimensions.
+
+
+
+Each position along a dimension of A-shared can map on to 0 or one positions along the corresponding dimension of B-shared. Each position along an element of B-shared can map on to 0, 1, or more elements of teh corresponding dimension of A-shared.
+
+
+
+
+## Conventions in R code
+
+By default, use 1-based indices. If using 0-based index, name it accordingly.
+
+
+i - 1-dimensional index , ie position within A treated as vector. 
+j - 1-diemnsional index, ie position within B treated as a vector.
+I - length of A, treated as a vector. equal to prod(dim_A)
+J - length of B, treated as a vector. equal to prod(dim_A)
+
+dim - lengths of dimensions (ie standard R definition)
+K - the length of dim
+k - index for dim, k = 1, ..., K
+d - the length of the k'th dimension, ie dim[k]
+m - position along the k'th dimension, a number between 1 and d
+
+## 
+
