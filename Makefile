@@ -14,10 +14,10 @@ README.md : README.rmd
 documentation:
 	Rscript -e "devtools::document()"
 
-## Vignette
+# ## Vignette
 
-vignettes/a.png : vignettes/a.pdf
-	convert -trim -density 500 -resize 20% -quality 100 -background white -alpha remove -alpha  off $< $@
+# vignettes/a.png : vignettes/a.pdf
+# 	convert -trim -density 500 -resize 20% -quality 100 -background white -alpha remove -alpha  off $< $@
 
-vignettes/demiter.md : vignettes/demiter.Rmd
-	cd vignettes; R -e 'knitr::knit("demiter.Rmd")'
+# vignettes/demiter.md : vignettes/demiter.Rmd
+# 	cd vignettes; R -e 'knitr::knit("demiter.Rmd")'
