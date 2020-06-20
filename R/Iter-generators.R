@@ -1,7 +1,7 @@
 
-#' Create an object of class "IterCohort"
+#' Create an object of class "SpecIterCohort"
 #'
-#' Create an object of class \code{IterCohort} that
+#' Create an object of class \code{SpecIterCohort} that
 #' contains the information needed to construct an
 #' iterator for a particular array. The iterators
 #' traverse cohorts within that array.
@@ -10,30 +10,30 @@
 #' @param i_time The index for the time dimension of the array.
 #' @param i_age The index for the age dimension of the array.
 #' Equal to \code{NULL} if the array does not have an age dimension.
-#' @param i_triangle The index of any dimension of array \code{self}
-#' that has dimtype \code{"triangle"}. Equal to \code{NULL} if \code{self}
+#' @param i_triangle The index of any dimension of array
+#' that has dimtype \code{"triangle"}. Equal to \code{NULL} if array
 #' does not have a triangle dimension.
-#' @param stop_at_oldest Whether function \code{next_cohort} should
-#' return \code{FALSE} once the iterator reaches the oldest age group.
+#' @param stop_at_oldest Whether function \code{\link{iter_next_cohort}}
+#' should return \code{FALSE} once the iterator reaches the oldest age group.
 #' @param offsets A vector of one or more integers specifying
 #' the offsets used to identify cohorts that are traversed
 #' in parallel. Equals \code{0} of only one cohort is being traversed.
 #'
-#' @return An object of class \code{IterCohort}.
+#' @return An object of class \code{SpecIterCohort}.
 #'
 #' @seealso To create a cohort iterator from an object of class
-#' \code{IterCohort}, use function \code{\link{create_iter_cohort}}.
+#' \code{SpecIterCohort}, use function \code{\link{iter_create_cohort}}.
 #'
 #' @examples
-#' x <- IterCohort(dim = c(4, 2, 3),
-#'                 i_time = 3,
-#'                 i_age = 1,
-#'                 i_triangle = 2
-#'                 stop_at_oldest = FALSE,
-#'                 offset = 0)
+#' x <- SpecIterCohort(dim = c(4, 2, 3),
+#'                      i_time = 3,
+#'                      i_age = 1,
+#'                      i_triangle = 2
+#'                      stop_at_oldest = FALSE,
+#'                      offset = 0)
 #' @export
-IterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
-                       stop_at_oldest = NULL, offsets = 0L) {
+SpecIterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
+                           stop_at_oldest = NULL, offsets = 0L) {
     ## 'dim'
     demcheck::err_positive_length(x = dim,
                                   name = "dim")
@@ -43,24 +43,10 @@ IterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
     i_time <- demcheck::err_tdy_positive_integer_scalar(x = i_time,
                                                         name = "i_time",
                                                         null_ok = FALSE)
-    demcheck::err_le_scalar(x1 = i_time,
-                            x2 = length(dim),
-                            name1 = "i_time",
-                            name2 = "length(dim)")
     ## 'i_age'
-    if (!is.null(i_age)) {
-        i_age <- demcheck::err_tdy_positive_integer_scalar(x = i_age,
-                                                           name = "i_age",
-                                                           null_ok = FALSE)
-        demcheck::err_le_scalar(x1 = i_age,
-                                x2 = length(dim),
-                                name1 = "i_age",
-                                name2 = "length(dim)")
-        demcheck::err_not_equal_integer_scalar(x1 = i_age,
-                                               x2 = i_time,
-                                               name1 = "i_age",
-                                               name2 = "i_time")
-    }
+    i_age <- demcheck::err_tdy_positive_integer_scalar(x = i_age,
+                                                       name = "i_age",
+                                                       null_ok = TRUE)
     ## 'i_triangle'
     demcheck::chk_null_if_null(x1 = i_triangle,
                                x2 = i_age,
@@ -93,36 +79,90 @@ IterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
                                       name = "stop_at_oldest")
     ## 'offsets'
     offsets <- demcheck::err_tdy_non_negative_integer_vector(x = offsets,
-                                                            name = "offsets")
+                                                             name = "offsets")
     demcheck::err_positive_length(x = offsets,
                                   name = "offsets")
     demcheck::err_strictly_increasing(x = offsets,
                                       name = "offsets")
-    ## convert NULLs to 0s
+    ## 'dim', 'i_age'
+    if (!is.null(i_age)) {
+        demcheck::err_le_scalar(x1 = i_age,
+                                x2 = length(dim),
+                                name1 = "i_age",
+                                name2 = "length(dim)")
+    }
+    ## 'dim', 'i_triangle'
+    if (!is.null(i_triangle)) {
+        demcheck::err_le_scalar(x1 = i_time,
+                                x2 = length(dim),
+                                name1 = "i_time",
+                                name2 = "length(dim)")
+    }
+    ## 'i_age', 'i_triangle'
+    val <- demcheck::chk_null_if_null(x1 = i_triangle,
+                                      x2 = i_age,
+                                      name1 = "i_triangle",
+                                      name2 = "i_age")
+    if (!isTRUE(val))
+        return(val)
+    ## 'i_age', 'stop_at_oldest'
+    val <- demcheck::chk_null_ifonlyif_null(x1 = stop_at_oldest,
+                                            x2 = i_age,
+                                            name1 = "stop_at_oldest",
+                                            name2 = "i_age")
+    ## 'i_time', 'i_age', 'i_triangle'
+    ## (NULLs are zapped)
+    val <- demcheck::chk_indices_distinct(indices = list(i_time,
+                                                         i_age,
+                                                         i_triangle),
+                                          names = c("i_time",
+                                                    "i_age",
+                                                    "i_triangle"),
+                                          exclude_zero = FALSE)
+    if (!isTRUE(val))
+        return(val)
+    ## convert NULLs to 0s or NA
     if (is.null(i_age))
         i_age <- 0L
     if (is.null(i_triangle))
         i_triangle <- 0L
+    if (is.null(stop_at_oldest))
+        stop_at_oldest <- NA
+    ## 'n'
+    n_time <- dim[[i_time]]
+    if (i_age > 0L)
+        n_age <- dim[[i_age]]
+    else
+        n_age <- 0L
     ## 'strides'
     strides <- make_strides(dim)
+    stride_time <- strides[[i_time]]
+    if (i_age > 0L)
+        stride_age <- strides[[i_age]]
+    else
+        stride_age  <- 0L
+    if (i_triangle > 0L)
+        stride_triangle <- strides[[i_triangle]]
+    else
+        stride_triangle  <- 0L
     ## 'n_offsets'
     n_offsets <- length(offsets)
     ## return value
-    methods::new("IterCohort",
-        dim_self = dim,
-        i_time_self = i_time,
-        i_age_self = i_age,
-        i_triangle_self = i_triangle,
-        strides_self = strides,
-        stop_at_oldest = stop_at_oldest,
-        offsets = offsets,
-        n_offsets = n_offsets)
+    methods::new("SpecIterCohort",
+                 n_time = n_time,
+                 n_age = n_age,
+                 stride_time = stride_time,
+                 stride_age = stride_age,
+                 stride_triangle = stride_triangle,
+                 stop_at_oldest = stop_at_oldest,
+                 offsets = offsets,
+                 n_offsets = n_offsets)
 }
 
 
-#' Create an object of class "IterCollapse"
+#' Create an object of class "SpecIterCollapse"
 #'
-#' Create an object of class \code{IterCollpse} that
+#' Create an object of class \code{SpecIterCollpse} that
 #' contains the information needed to create an iterator that
 #' maps cells in array \code{self} into cells in array \code{oth}.
 #'
@@ -135,18 +175,19 @@ IterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
 #' maps positions along a dimension of \code{self} on to a position
 #' along the matching dimension of \code{oth}.
 #'
-#' @return An object of class \code{IterCollapse}.
+#' @return An object of class \code{SpecIterCollapse}.
 #'
 #' @seealso To create a a collapse iterator from an object of class
-#' \code{IterCollapse}, use function \code{\link{create_iter_collapse}}.
+#' \code{SpecIterCollapse}, use function \code{\link{create_iter_collapse}}.
 #'
 #' @examples
-#' x <- IterCollapse(dim_self = c(4L, 2L, 3L),
+#' x <- SpecIterCollapse(dim_self = c(4L, 2L, 3L),
 #'                   dim_oth = c(4L, 3L)
 #'                   map_dim = c(1L, 0L, 2L),
 #'                   map_pos = list(1:4, c(0L, 0L), 1:3))
+#' class(x)
 #' @export
-IterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
+SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
     ## 'dim_self'
     dim_self <- demcheck::err_tdy_positive_integer_vector(x = dim_self,
                                                           name = "dim_self")
@@ -172,7 +213,7 @@ IterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
                           map_dim = map_dim)
     n_offsets <- length(offsets)
     ## return value
-    methods::new("IterCollapse",
+    methods::new("SpecIterCollapse",
                  pos_self = pos_self,
                  pos_oth = pos_oth,
                  dim_self = dim_self,
@@ -186,14 +227,14 @@ IterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 }
 
 
-#' Create an object of class "IterIncrement"
+#' Create an object of class "SpecIterIncrement"
 #'
-#' Create an object of class \code{IterCollpse} that
+#' Create an object of class \code{SpecIterCollpse} that
 #' contains the information needed to create an iterator
 #' that maps cells in array \code{self} to cells
 #' in arrays of increments or decrements.
 #'
-#' @inheritParams IterCollapse
+#' @inheritParams SpecIterCollapse
 #' @param comp_type_self The type of component: \code{"increment"},
 #' \code{"decrement"}, \code{"orig-dest"}, or \code{"pool"}.
 #' @param i_triangle_self The index of any dimension of array \code{self}
@@ -209,20 +250,20 @@ IterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 #' that has dimtype \code{"direction"}. Equal to \code{NULL} if \code{self}
 #' does not have a direction dimension.
 #'
-#' @return An object of class \code{IterIncrement}.
+#' @return An object of class \code{SpecIterIncrement}.
 #'
 #' @seealso To create an increment iterator from an object of class
-#' \code{IterIncrement}, use function \code{\link{create_iter_increment}}.
+#' \code{SpecIterIncrement}, use function \code{\link{create_iter_increment}}.
 #'
 #' @examples
-#' x <- IterCohort(dim = c(4, 2, 3),
+#' x <- SpecIterCohort(dim = c(4, 2, 3),
 #'                 i_time = 3,
 #'                 i_age = 1,
 #'                 i_triangle = 2
 #'                 stop_at_oldest = FALSE,
 #'                 offset = 0)
 #' @export
-IterIncrement <- function(dim_self,
+SpecIterIncrement <- function(dim_self,
                           dim_oth,
                           map_dim,
                           comp_type_self,
@@ -303,7 +344,7 @@ IterIncrement <- function(dim_self,
     strides_oth <- make_strides(dim_oth)
     i_comp_type_self <- make_i_comp_type(comp_type_self)
     n_orig_dest_self <- length(indices_orig_self)
-    methods::new("IterIncrement",
+    methods::new("SpecIterIncrement",
                  pos_self = pos_self,
                  pos_oth = pos_oth,
                  dim_self = dim_self,

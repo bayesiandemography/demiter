@@ -15,8 +15,8 @@
 #' All iterators have a has_next function, which
 #' returns FALSE if the iterator has been exhausted.
 #'
-#' Iterators are created from objects with class IterSpec,
-#' by a call to an 'create_iterator' function. 
+#' Iterators are created from objects with class SpecIter,
+#' by a call to an 'iter_create' function. 
 #'
 #' \pkg{demiter} does not use formal classes and
 #' methods for iterators, but instead uses

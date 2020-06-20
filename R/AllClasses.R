@@ -1,48 +1,41 @@
         
 
 
-setClass("Iter",
+setClass("SpecIter",
          contains = "VIRTUAL")
 
-validity_IterCohort <- function(object) {
-    dim_self <- object@dim_self
-    i_time_self <- object@i_time_self
-    i_age_self <- object@i_age_self
-    i_triangle_self <- object@i_triangle_self
-    strides_self <- object@strides_self
+validity_SpecIterCohort <- function(object) {
+    n_time <- object@n_time
+    n_age <- object@n_age
+    stride_time <- object@stride_time
+    stride_age <- object@stride_age
+    stride_triangle <- object@stride_triangle
     stop_at_oldest <- object@stop_at_oldest
     offsets <- object@offsets
     n_offsets <- object@n_offsets
-    ## 'dim_self'
-    val <- demcheck::chk_positive_dim(x = dim_self,
-                                      name = "dim_self")
+    ## 'n_time'
+    val <- demcheck::chk_positive_scalar(x = n_time,
+                                         name = "n_time")
     if (!isTRUE(val))
         return(val)
-    ## 'i_time_self'
-    val <- demcheck::chk_positive_scalar(x = i_time_self,
-                                         name = "i_time_self",
-                                         null_ok = FALSE)
+    ##' n_age'
+    val <- demcheck::chk_non_negative_scalar(x = n_age,
+                                             name = "n_age")
     if (!isTRUE(val))
         return(val)
-    ##' i_age_self'
-    val <- demcheck::chk_non_negative_scalar(x = i_age_self,
-                                             name = "i_age_self",
-                                             null_ok = FALSE)
+    ## 'stride_time'
+    val <- demcheck::chk_positive_scalar(x = stride_time,
+                                         name = "stride_time")
     if (!isTRUE(val))
         return(val)
-    ## 'i_triangle_self'
-    val <- demcheck::chk_non_negative_scalar(x = i_triangle_self,
-                                             name = "i_triangle_self",
-                                             null_ok = FALSE)
+    ## 'stride_age'
+    val <- demcheck::chk_non_negative_scalar(x = stride_age,
+                                             name = "stride_age")
     if (!isTRUE(val))
         return(val)
-    ## 'strides_self'
-    val <- demcheck::chk_positive_vector(x = strides_self,
-                                         name = "strides_self")
-    if (!isTRUE(val))
-        return(val)
-    val <- demcheck::chk_strictly_increasing(x = strides_self,
-                                             name = "strides_self")
+    ## 'stride_triangle'
+    val <- demcheck::chk_non_negative_scalar(x = stride_triangle,
+                                             name = "stride_triangle")
     if (!isTRUE(val))
         return(val)
     ## 'stop_at_oldest'
@@ -64,70 +57,16 @@ validity_IterCohort <- function(object) {
                                          name = "n_offsets")
     if (!isTRUE(val))
         return(val)
-    ## 'i_time_self' and 'dim_self'
-    val <- demcheck::chk_le_scalar(x1 = i_time_self,
-                                   x2 = length(dim_self),
-                                   name1 = "i_time_self",
-                                   name2 = "length(dim_self)")
-    if (!isTRUE(val))
-        return(val)
-    ## 'i_age_self' and 'dim_self'
-    val <- demcheck::chk_le_scalar(x1 = i_age_self,
-                                   x2 = length(dim_self),
-                                   name1 = "i_age_self",
-                                   name2 = "length(dim_self)")
-    if (!isTRUE(val))
-        return(val)
-    ## 'i_triangle_self' and 'dim_self'
-    val <- demcheck::chk_le_scalar(x1 = i_triangle_self,
-                                   x2 = length(dim_self),
-                                   name1 = "i_triangle_self",
-                                   name2 = "length(dim_self)")
-    if (!isTRUE(val))
-        return(val)
-    ## 'strides_self' and 'dim_self'
-    val <- demcheck::chk_length_same(x1 = strides_self,
-                                     x2 = dim_self,
-                                     name1 = "strides_self",
-                                     name2 = "dim_self")
-    if (!isTRUE(val))
-        return(val)
-    if (!identical(strides_self, make_strides(dim_self)))
-        return(gettextf("'%s' not identical to '%s'",
-                        "strides_self", "make_strides(dim_self)"))
-    val <- demcheck::chk_le_scalar(x1 = i_triangle_self,
-                                   x2 = length(dim_self),
-                                   name1 = "i_triangle_self",
-                                   name2 = "length(dim_self)")
-    if (!isTRUE(val))
-        return(val)
-    ## 'i_triangle_self' and 'i_age_self'
-    val <- demcheck::chk_zero_if_zero(x1 = i_triangle_self,
-                                      x2 = i_age_self,
-                                      name1 = "i_triangle_self",
-                                      name2 = "i_age_self")
-    if (!isTRUE(val))
-        return(val)
-    ## 'i_time_self', 'i_age_self', 'i_triangle_self'
-    val <- demcheck::chk_indices_distinct(indices = list(i_time_self,
-                                                         i_age_self,
-                                                         i_triangle_self),
-                                          names = c("i_time_self",
-                                                    "i_age_self",
-                                                    "i_triangle_self"),
-                                          exclude_zero = TRUE)
-    if (!isTRUE(val))
-        return(val)
-    ## 'stop_at_oldest' and 'i_age_self'
-    if (i_age_self == 0L)
+    ## 'stride_age' and 'stop_at_oldest'
+    if (stride_age == 0L)
         val <- demcheck::chk_is_na_scalar(x = stop_at_oldest,
                                           name = "stop_at_oldest")
     else
-        val <- demcheck::chk_is_logical_flag(x = stop_at_oldest,
-                                             name = "stop_at_oldest")
+        val <- demcheck::chk_not_na_scalar(x = stop_at_oldest,
+                                           name = "stop_at_oldest")
     if (!isTRUE(val))
         return(val)
-    ## 'n_offsets' and 'offsets'
+    ## 'offsets' and 'n_offsets'
     val <- demcheck::chk_length_equals(x1 = offsets,
                                        x2 = n_offsets,
                                        name1 = "offsets",
@@ -137,23 +76,22 @@ validity_IterCohort <- function(object) {
     TRUE    
 }
 
-
-setClass("IterCohort",
-         contains = "Iter",
-         slots = c(dim_self = "integer",
-                   i_time_self = "integer",
-                   i_age_self = "integer",
-                   i_triangle_self = "integer",
-                   strides_self = "integer",
+setClass("SpecIterCohort",
+         contains = "SpecIter",
+         slots = c(n_time = "integer",
+                   n_age = "integer",
+                   stride_time = "integer",
+                   stride_age = "integer",
+                   stride_triangle = "integer",
                    stop_at_oldest = "logical",
                    offsets = "integer",
                    n_offsets = "integer"),
-         validity = validity_IterCohort)
+         validity = validity_SpecIterCohort)
 
 
 
 
-validity_IterCollapse <- function(object) {
+validity_SpecIterCollapse <- function(object) {
     pos_self <- object@pos_self
     pos_oth <- object@pos_oth
     dim_self <- object@dim_self
@@ -314,8 +252,8 @@ validity_IterCollapse <- function(object) {
 }
 
 
-setClass("IterCollapse",
-         contains = "Iter",
+setClass("SpecIterCollapse",
+         contains = "SpecIter",
          slots = c(pos_self = "integer",
                    pos_oth = "integer",
                    dim_self = "integer",
@@ -326,10 +264,10 @@ setClass("IterCollapse",
                    strides_oth = "integer",
                    offsets = "integer",
                    n_offsets = "integer"),
-         validity = validity_IterCollapse)
+         validity = validity_SpecIterCollapse)
 
 
-validity_IterIncrement <- function(object) {
+validity_SpecIterIncrement <- function(object) {
     pos_self <- object@pos_self
     pos_oth <- object@pos_oth
     dim_self <- object@dim_self
@@ -514,8 +452,8 @@ validity_IterIncrement <- function(object) {
     TRUE    
 }
 
-setClass("IterIncrement",
-         contains = "Iter",
+setClass("SpecIterIncrement",
+         contains = "SpecIter",
          slots = c(pos_self = "integer",
                    pos_oth = "integer",
                    dim_self = "integer",
@@ -530,7 +468,7 @@ setClass("IterIncrement",
                    indices_dest_self = "integer",
                    n_orig_dest_self = "integer",
                    i_direction_self = "integer"),
-         validity = validity_IterIncrement)
+         validity = validity_SpecIterIncrement)
 
 
 
