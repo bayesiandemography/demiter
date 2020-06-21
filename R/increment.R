@@ -151,9 +151,3 @@ iter_next_increment <- function(iter) {
 iter_has_next_increment <- function(iter) {
     iter$has_next
 }
-
-
-iter_nval_increment <- function(iter) {
-    3L
-}
-

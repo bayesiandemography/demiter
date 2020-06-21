@@ -119,14 +119,12 @@ validity_SpecIterCollapse <- function(object) {
         return(val)
     ## 'n_dim_self'
     val <- demcheck::chk_positive_scalar(x = n_dim_self,
-                                         name = "n_dim_self",
-                                         null_ok = FALSE)
+                                         name = "n_dim_self")
     if (!isTRUE(val))
         return(val)
     ## 'n_dim_oth'
     val <- demcheck::chk_positive_scalar(x = n_dim_oth,
-                                         name = "n_dim_oth",
-                                         null_ok = FALSE)
+                                         name = "n_dim_oth")
     if (!isTRUE(val))
         return(val)
     ## 'map_dim'
@@ -299,14 +297,12 @@ validity_SpecIterIncrement <- function(object) {
         return(val)
     ## 'n_dim_self'
     val <- demcheck::chk_positive_scalar(x = n_dim_self,
-                                         name = "n_dim_self",
-                                         null_ok = FALSE)
+                                         name = "n_dim_self")
     if (!isTRUE(val))
         return(val)
     ## 'n_dim_oth'
     val <- demcheck::chk_positive_scalar(x = n_dim_oth,
-                                         name = "n_dim_oth",
-                                         null_ok = FALSE)
+                                         name = "n_dim_oth")
     if (!isTRUE(val))
         return(val)
     ## 'map_dim'
@@ -339,32 +335,27 @@ validity_SpecIterIncrement <- function(object) {
         return(val)
     ## 'i_triangle_self'
     val <- demcheck::chk_non_negative_scalar(x = i_triangle_self,
-                                             name = "i_triangle_self",
-                                             null_ok = FALSE)
+                                             name = "i_triangle_self")
     if (!isTRUE(val))
         return(val)
     ## 'indices_orig_self'
     val <- demcheck::chk_non_negative_vector(x = indices_orig_self,
-                                             name = "indices_orig_self",
-                                             null_ok = FALSE)
+                                             name = "indices_orig_self")
     if (!isTRUE(val))
         return(val)
     ## 'indices_orig_dest'
     val <- demcheck::chk_non_negative_vector(x = indices_orig_dest,
-                                             name = "indices_orig_dest",
-                                             null_ok = FALSE)
+                                             name = "indices_orig_dest")
     if (!isTRUE(val))
         return(val)
     ## 'n_orig_dest_self'
     val <- demcheck::chk_non_negative_scalar(x = n_orig_dest_self,
-                                             name = "n_orig_dest_self",
-                                             null_ok = FALSE)
+                                             name = "n_orig_dest_self")
     if (!isTRUE(val))
         return(val)
     ## 'i_direction_self'
     val <- demcheck::chk_non_negative_scalar(x = i_direction_self,
-                                             name = "i_direction_self",
-                                             null_ok = FALSE)
+                                             name = "i_direction_self")
     if (!isTRUE(val))
         return(val)
     ## 'dim_self' and 'pos_self'

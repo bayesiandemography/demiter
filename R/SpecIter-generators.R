@@ -28,7 +28,7 @@
 #' x <- SpecIterCohort(dim = c(4, 2, 3),
 #'                      i_time = 3,
 #'                      i_age = 1,
-#'                      i_triangle = 2
+#'                      i_triangle = 2,
 #'                      stop_at_oldest = FALSE,
 #'                      offset = 0)
 #' @export
@@ -182,9 +182,9 @@ SpecIterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
 #'
 #' @examples
 #' x <- SpecIterCollapse(dim_self = c(4L, 2L, 3L),
-#'                   dim_oth = c(4L, 3L)
-#'                   map_dim = c(1L, 0L, 2L),
-#'                   map_pos = list(1:4, c(0L, 0L), 1:3))
+#'                       dim_oth = c(4L, 3L),
+#'                       map_dim = c(1L, 0L, 2L),
+#'                       map_pos = list(1:4, c(0L, 0L), 1:3))
 #' class(x)
 #' @export
 SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
@@ -196,10 +196,10 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
                                                          name = "dim_oth")
     ## 'map_dim'
     map_dim <- demcheck::err_tdy_map_dim(map_dim = map_dim,
-                                         dim_self = dim_self,
-                                         dim_oth = dim_oth)
+                                         n_dim_self = length(dim_self),
+                                         n_dim_oth = length(dim_oth))
     ## 'map_pos'
-    map_dim <- demcheck::err_tdy_map_pos(map_pos = map_pos,
+    map_pos <- demcheck::err_tdy_map_pos(map_pos = map_pos,
                                          dim_self = dim_self,
                                          dim_oth = dim_oth,
                                          map_dim = map_dim)
@@ -208,9 +208,17 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
     n_dim_oth <- length(dim_oth)
     pos_self <- rep(1L, times = n_dim_self)
     pos_oth <- rep(1L, times = n_dim_oth)
+    for (i_dim_self in seq_len(n_dim_self)) {
+        val_map_dim <- map_dim[[i_dim_self]]
+        maps_into_oth <- val_map_dim > 0L
+        if (maps_into_oth) {
+            val_map_pos <- map_pos[[i_dim_self]]
+            pos_oth[[val_map_dim]] <- val_map_pos[[1L]]
+        }
+    }
     strides_oth <- make_strides(dim_oth)
     offsets <- make_offsets(dim_oth = dim_oth,
-                          map_dim = map_dim)
+                            map_dim = map_dim)
     n_offsets <- length(offsets)
     ## return value
     methods::new("SpecIterCollapse",
@@ -257,20 +265,20 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 #'
 #' @examples
 #' x <- SpecIterCohort(dim = c(4, 2, 3),
-#'                 i_time = 3,
-#'                 i_age = 1,
-#'                 i_triangle = 2
-#'                 stop_at_oldest = FALSE,
-#'                 offset = 0)
+#'                     i_time = 3,
+#'                     i_age = 1,
+#'                     i_triangle = 2,
+#'                     stop_at_oldest = FALSE,
+#'                     offset = 0)
 #' @export
 SpecIterIncrement <- function(dim_self,
-                          dim_oth,
-                          map_dim,
-                          comp_type_self,
-                          i_triangle_self = NULL,
-                          indices_orig_self = NULL,
-                          indices_dest_self = NULL,
-                          i_direction_self = NULL) {
+                              dim_oth,
+                              map_dim,
+                              comp_type_self,
+                              i_triangle_self = NULL,
+                              indices_orig_self = NULL,
+                              indices_dest_self = NULL,
+                              i_direction_self = NULL) {
     ## 'dim_self'
     demcheck::err_positive_length(dim_self,
                                   name = "dim_self")

@@ -5,7 +5,6 @@
 \alias{iter_create_cohort}
 \alias{iter_next_cohort}
 \alias{iter_has_next_cohort}
-\alias{iter_nval_cohort}
 \title{Cohort iterators}
 \usage{
 iter_create_cohort(spec, i)
@@ -13,8 +12,6 @@ iter_create_cohort(spec, i)
 iter_next_cohort(iter)
 
 iter_has_next_cohort(iter)
-
-iter_nval_cohort(iter)
 }
 \arguments{
 \item{spec}{An object of class \code{\link{SpecIterCohort}}.}
@@ -64,9 +61,6 @@ if the cohort has additional positions it
 can occupy within the array, and \code{FALSE}
 otherwise.
 
-\code{iter_nval_cohort} returns the number of cells
-that the cohort occupies at any given time.
-
 If the array does not have an Lexis triangle dimension,
 then the iterator advances along the time dimension with
 each call to \code{iter_next_cohort}. If the array does have
@@ -85,11 +79,11 @@ along the time dimension.
 }
 \examples{
 ## No age, cohort occupies one cell
-spec <- SpecIterCohort(dim = c(2, 4),
+spec <- SpecIterCohort(dim = c(2, 3),
                        i_time = 2)
 iter <- iter_create_cohort(spec = spec,
                            i = 2)
-iter_nval_cohort(iter)
+iter_has_next_cohort(iter)
 iter_next_cohort(iter)
 iter_has_next_cohort(iter)
 iter_next_cohort(iter)
@@ -104,7 +98,9 @@ spec <- SpecIterCohort(dim = c(3, 5),
                        stop_at_oldest = FALSE)
 iter <- iter_create_cohort(spec = spec,
                            i = 5)
-iter_nval_cohort(iter)
+iter_has_next_cohort(iter)
+iter_next_cohort(iter)
+iter_has_next_cohort(iter)
 iter_next_cohort(iter)
 iter_has_next_cohort(iter)
 iter_next_cohort(iter)
@@ -113,14 +109,18 @@ iter_next_cohort(iter)
 iter_has_next_cohort(iter)
 
 ## No age, cohort occupies two cells
-spec <- SpecIterCohort(dim = c(2, 4),
+spec <- SpecIterCohort(dim = c(2, 3),
                       i_time = 2,
                       offset = c(0, 1))
 iter <- iter_create_cohort(spec = spec,
                            i = 3)
-iter_nval_cohort(iter)
+iter_has_next_cohort(iter)
 iter_next_cohort(iter)
 iter_has_next_cohort(iter)
 iter_next_cohort(iter)
-iter_has_next_cohort(iter)#'
+iter_has_next_cohort(iter)
+}
+\seealso{
+\code{\link{SpecIterCohort}}, \code{\link{collapse}},
+\code{\link{increment}}.
 }

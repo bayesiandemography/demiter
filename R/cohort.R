@@ -65,9 +65,6 @@
 #' can occupy within the array, and \code{FALSE}
 #' otherwise.
 #'
-#' \code{iter_nval_cohort} returns the number of cells
-#' that the cohort occupies at any given time.
-#' 
 #' If the array does not have an Lexis triangle dimension,
 #' then the iterator advances along the time dimension with
 #' each call to \code{iter_next_cohort}. If the array does have
@@ -87,13 +84,16 @@
 #' @param spec An object of class \code{\link{SpecIterCohort}}.
 #' @param i The index of a cell in the array.
 #'
+#' @seealso \code{\link{SpecIterCohort}}, \code{\link{collapse}},
+#' \code{\link{increment}}.
+#'
 #' @examples
 #' ## No age, cohort occupies one cell
-#' spec <- SpecIterCohort(dim = c(2, 4),
+#' spec <- SpecIterCohort(dim = c(2, 3),
 #'                        i_time = 2)
 #' iter <- iter_create_cohort(spec = spec,
 #'                            i = 2)
-#' iter_nval_cohort(iter)
+#' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
 #' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
@@ -108,7 +108,9 @@
 #'                        stop_at_oldest = FALSE)
 #' iter <- iter_create_cohort(spec = spec,
 #'                            i = 5)
-#' iter_nval_cohort(iter)
+#' iter_has_next_cohort(iter)
+#' iter_next_cohort(iter)
+#' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
 #' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
@@ -117,16 +119,16 @@
 #' iter_has_next_cohort(iter)
 #'
 #' ## No age, cohort occupies two cells
-#' spec <- SpecIterCohort(dim = c(2, 4),
+#' spec <- SpecIterCohort(dim = c(2, 3),
 #'                       i_time = 2,
 #'                       offset = c(0, 1))
 #' iter <- iter_create_cohort(spec = spec,
 #'                            i = 3)
-#' iter_nval_cohort(iter)
+#' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
 #' iter_has_next_cohort(iter)
 #' iter_next_cohort(iter)
-#' iter_has_next_cohort(iter)#'
+#' iter_has_next_cohort(iter)
 #' @name cohort
 NULL
 
@@ -153,7 +155,7 @@ iter_create_cohort <- function(spec, i) {
         pos_triangle <- (((i - 1L) %/% stride_triangle) %% 2L) + 1L
     else
         pos_triangle <- 0L
-    ans <- new.env(size = 12L)
+    ans <- new.env(size = 14L)
     ans$i <- i
     ans$pos_time <- pos_time
     ans$pos_age <- pos_age
@@ -166,6 +168,8 @@ iter_create_cohort <- function(spec, i) {
     ans$stop_at_oldest <- spec@stop_at_oldest
     ans$offsets <- spec@offsets
     ans$n_offsets <- spec@n_offsets
+    ans$has_next <- TRUE
+    ans$is_first <- TRUE
     ans
 }
 
@@ -183,70 +187,81 @@ iter_next_cohort <- function(iter) {
     stride_triangle <- iter$stride_triangle
     stop_at_oldest <- iter$stop_at_oldest
     offsets <- iter$offsets
+    is_first <- iter$is_first
     has_age <- stride_age > 0L
     has_triangle <- stride_triangle > 0L
-    ## Step 1: Update position
-    if (has_age) {
-        is_oldest  <- pos_age == n_age
-        if (has_triangle) {
-            is_lower <- pos_triangle == 1L
-            if (is_oldest) {
-                ## Case 1: Has age, has triangles, in oldest age group.
-                ## If already in the oldest age group, and still going,
-                ## then 'stop_at_oldest' must be FALSE
-                pos_time <- pos_time + 1L
-                i <- i + stride_time
-                ## if currently in lower triangle, advance
-                ## to upper triangle; if currently in upper
-                ## triangle, stay in upper triangle
-                if (is_lower) {
-                    pos_triangle <- 2L
-                    i <- i + stride_triangle
+    is_oldest <- has_age && (pos_age == n_age)
+    is_lower <- has_triangle && pos_triangle == 1L
+    ## Step 1: Except when 'first' is TRUE, update position
+    if (is_first) {
+        iter$is_first <- FALSE
+    }
+    else {
+        if (has_age) {
+            if (has_triangle) {
+                if (is_oldest) {
+                    ## Case 1: Has age, has triangles, in oldest age group.
+                    ## If already in the oldest age group, and still going,
+                    ## then 'stop_at_oldest' must be FALSE
+                    pos_time <- pos_time + 1L
+                    i <- i + stride_time
+                    ## if currently in lower triangle, advance
+                    ## to upper triangle; if currently in upper
+                    ## triangle, stay in upper triangle
+                    if (is_lower) {
+                        pos_triangle <- 2L
+                        i <- i + stride_triangle
+                        is_lower <- FALSE
+                    }
+                }
+                else {
+                    ## Case 2: Has age, has triangles, not in oldest age group.
+                    if (is_lower) {
+                        pos_time <- pos_time + 1L
+                        i <- i + stride_time
+                        pos_triangle <- 2L
+                        i <- i + stride_triangle
+                        is_lower <- FALSE
+                    }
+                    else {
+                        pos_age <- pos_age + 1L
+                        i <- i + stride_age
+                        is_oldest <- pos_age == n_age
+                        pos_triangle <- 1L
+                        i <- i - stride_triangle
+                        is_lower <- FALSE
+                    }
                 }
             }
             else {
-                ## Case 2: Has age, has triangles, not in oldest age group.
-                if (is_lower) {
+                if (is_oldest) {
+                    ## Case 3: Has age, no triangles, in oldest age group
+                    ## If already in the oldest age group, and still going,
+                    ## then 'stop_at_oldest' must be FALSE
                     pos_time <- pos_time + 1L
                     i <- i + stride_time
-                    pos_triangle <- 2L
-                    i <- i + stride_triangle
                 }
                 else {
+                    ## Case 4: Has age, no triangles, not in oldest age group
+                    pos_time <- pos_time + 1L
+                    i <- i + stride_time
                     pos_age <- pos_age + 1L
                     i <- i + stride_age
-                    pos_triangle <- 1L
-                    i <- i - stride_triangle
+                    is_oldest <- pos_age == n_age
                 }
             }
         }
         else {
-            if (is_oldest) {
-                ## Case 3: Has age, no triangles, in oldest age group
-                ## If already in the oldest age group, and still going,
-                ## then 'stop_at_oldest' must be FALSE
-                pos_time <- pos_time + 1L
-                i <- i + stride_time
-            }
-            else {
-                ## Case 4: Has age, no triangles, not in oldest age group
-                pos_time <- pos_time + 1L
-                i <- i + stride_time
-                pos_age <- pos_age + 1L
-                i <- i + stride_age
-            }
+            ## Case 5: No age
+            pos_time <- pos_time + 1L
+            i <- i + stride_time
         }
+        iter$i <- i
+        iter$pos_time <- pos_time
+        iter$pos_age <- pos_age
+        iter$pos_triangle <- pos_triangle
     }
-    else {
-        ## Case 5: No age
-        pos_time <- pos_time + 1L
-        i <- i + stride_time
-    }
-    iter$i <- i
-    iter$pos_time <- pos_time
-    iter$pos_age <- pos_age
-    iter$pos_triangle <- pos_triangle
-    ## Step 2: Update iterator and return vector
+    ## Step 2: Derive value for 'has_next'
     is_last <- pos_time == n_time
     if (has_age && stop_at_oldest && is_oldest)
         has_next <- FALSE
@@ -255,6 +270,7 @@ iter_next_cohort <- function(iter) {
     else
         has_next <- !is_last
     iter$has_next <- has_next
+    ## Return result
     i_vec <- i + offsets
     i_vec
 }
@@ -264,11 +280,4 @@ iter_next_cohort <- function(iter) {
 #' @export
 iter_has_next_cohort <- function(iter) {
     iter$has_next
-}
-
-
-#' @rdname cohort
-#' @export
-iter_nval_cohort <- function(iter) {
-    iter$n_offsets
 }
