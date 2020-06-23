@@ -15,6 +15,8 @@ iter_has_next_collapse(iter)
 }
 \arguments{
 \item{spec}{An object of class \code{\link{SpecIterCollapse}}.}
+
+\item{iter}{A collapse iterator.}
 }
 \description{
 A collapse iterator traverses array \code{self},
@@ -56,6 +58,18 @@ indices of the associated cell(s) in \code{oth}.
 \code{iter_has_next_collapse} returns \code{FALSE}
 if the iterator has reached the final cell of
 \code{self}, and \code{TRUE} otherwise.
+}
+\examples{
+spec <- SpecIterCollapse(dim_self = c(3, 2),
+                         dim_oth = 2,
+                         map_dim = c(1, 0),
+                         map_pos = list(c(1, 2, 2), c(0, 0)))
+iter <- iter_create_collapse(spec)
+for (i in 1:6) {
+    print(iter_has_next_collapse(iter))
+    print(iter_next_collapse(iter))
+}
+iter_has_next_collapse(iter)
 }
 \seealso{
 \code{\link{SpecIterCollapse}}, \code{\link{cohort}},

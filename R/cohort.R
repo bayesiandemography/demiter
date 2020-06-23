@@ -83,6 +83,7 @@
 #' 
 #' @param spec An object of class \code{\link{SpecIterCohort}}.
 #' @param i The index of a cell in the array.
+#' @param iter A cohort iterator.
 #'
 #' @seealso \code{\link{SpecIterCohort}}, \code{\link{collapse}},
 #' \code{\link{increment}}.

@@ -17,6 +17,8 @@ iter_has_next_cohort(iter)
 \item{spec}{An object of class \code{\link{SpecIterCohort}}.}
 
 \item{i}{The index of a cell in the array.}
+
+\item{iter}{A cohort iterator.}
 }
 \description{
 A cohort iterator traverses an array with a time

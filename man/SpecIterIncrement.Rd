@@ -35,13 +35,13 @@ does not have a triangle dimension.}
 the indices of any dimensions of \code{self} with dimtype
 \code{"origin"}.}
 
+\item{indices_dest_self}{An integer vector containing
+the indices of any dimensions of \code{self} with dimtype
+\code{"destination"}.}
+
 \item{i_direction_self}{The index of any dimension of array \code{self}
 that has dimtype \code{"direction"}. Equal to \code{NULL} if \code{self}
 does not have a direction dimension.}
-
-\item{indices_orig_dest}{An integer vector containing
-the indices of any dimensions of \code{self} with dimtype
-\code{"destination"}.}
 }
 \value{
 An object of class \code{SpecIterIncrement}.
@@ -53,14 +53,15 @@ that maps cells in array \code{self} to cells
 in arrays of increments or decrements.
 }
 \examples{
-x <- SpecIterCohort(dim = c(4, 2, 3),
-                i_time = 3,
-                i_age = 1,
-                i_triangle = 2,
-                stop_at_oldest = FALSE,
-                offset = 0)
+x <- SpecIterIncrement(dim_self = c(4, 2, 3),
+                       dim_oth = c(4, 2, 3),
+                       map_dim = c(1, 2, 3),
+                       comp_type_self = "increment",
+                       i_triangle_self = 2)
+class(x)
 }
 \seealso{
 To create an increment iterator from an object of class
-\code{SpecIterIncrement}, use function \code{\link{create_iter_increment}}.
+\code{SpecIterIncrement}, use function
+\code{\link[=increment]{create_iter_increment}}.
 }

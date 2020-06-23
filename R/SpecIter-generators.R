@@ -22,15 +22,17 @@
 #' @return An object of class \code{SpecIterCohort}.
 #'
 #' @seealso To create a cohort iterator from an object of class
-#' \code{SpecIterCohort}, use function \code{\link{iter_create_cohort}}.
+#' \code{SpecIterCohort}, use function
+#' \code{\link[=cohort]{iter_create_cohort}}.
 #'
 #' @examples
 #' x <- SpecIterCohort(dim = c(4, 2, 3),
-#'                      i_time = 3,
-#'                      i_age = 1,
-#'                      i_triangle = 2,
-#'                      stop_at_oldest = FALSE,
-#'                      offset = 0)
+#'                     i_time = 3,
+#'                     i_age = 1,
+#'                     i_triangle = 2,
+#'                     stop_at_oldest = FALSE,
+#'                     offset = 0)
+#' class(x)
 #' @export
 SpecIterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
                            stop_at_oldest = NULL, offsets = 0L) {
@@ -177,8 +179,9 @@ SpecIterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
 #'
 #' @return An object of class \code{SpecIterCollapse}.
 #'
-#' @seealso To create a a collapse iterator from an object of class
-#' \code{SpecIterCollapse}, use function \code{\link{create_iter_collapse}}.
+#' @seealso To create a collapse iterator from an object of class
+#' \code{SpecIterCollapse}, use function
+#' \code{\link[=collapse]{create_iter_collapse}}.
 #'
 #' @examples
 #' x <- SpecIterCollapse(dim_self = c(4L, 2L, 3L),
@@ -251,7 +254,7 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 #' @param indices_orig_self An integer vector containing
 #' the indices of any dimensions of \code{self} with dimtype
 #' \code{"origin"}.
-#' @param indices_orig_dest An integer vector containing
+#' @param indices_dest_self An integer vector containing
 #' the indices of any dimensions of \code{self} with dimtype
 #' \code{"destination"}.
 #' @param i_direction_self The index of any dimension of array \code{self}
@@ -261,15 +264,16 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 #' @return An object of class \code{SpecIterIncrement}.
 #'
 #' @seealso To create an increment iterator from an object of class
-#' \code{SpecIterIncrement}, use function \code{\link{create_iter_increment}}.
+#' \code{SpecIterIncrement}, use function
+#' \code{\link[=increment]{create_iter_increment}}.
 #'
 #' @examples
-#' x <- SpecIterCohort(dim = c(4, 2, 3),
-#'                     i_time = 3,
-#'                     i_age = 1,
-#'                     i_triangle = 2,
-#'                     stop_at_oldest = FALSE,
-#'                     offset = 0)
+#' x <- SpecIterIncrement(dim_self = c(4, 2, 3),
+#'                        dim_oth = c(4, 2, 3),
+#'                        map_dim = c(1, 2, 3),
+#'                        comp_type_self = "increment",
+#'                        i_triangle_self = 2)
+#' class(x)
 #' @export
 SpecIterIncrement <- function(dim_self,
                               dim_oth,
@@ -282,19 +286,19 @@ SpecIterIncrement <- function(dim_self,
     ## 'dim_self'
     demcheck::err_positive_length(dim_self,
                                   name = "dim_self")
-    dim <- demcheck::err_tdy_positive_integer_vector(x = dim_self,
-                                                     name = "dim_self")
+    dim_self <- demcheck::err_tdy_positive_integer_vector(x = dim_self,
+                                                          name = "dim_self")
     ## 'dim_oth'
     demcheck::err_positive_length(dim_oth,
                                   name = "dim_oth")
-    dim <- demcheck::err_tdy_positive_integer_vector(x = dim_oth,
-                                                     name = "dim_oth")
+    dim_oth <- demcheck::err_tdy_positive_integer_vector(x = dim_oth,
+                                                         name = "dim_oth")
     ## 'map_dim'
     map_dim <- demcheck::err_tdy_map_dim(map_dim = map_dim,
-                                         dim_self = dim_self,
-                                         dim_oth = dim_oth)
+                                         n_dim_self = length(dim_self),
+                                         n_dim_oth = length(dim_oth))
     ## 'camp_type_self'
-    demcheck::err_member_comp_type(comp_type = comp_type_self,
+    demcheck::err_member_comp_type(x = comp_type_self,
                                    name = "comp_type_self")
     ## 'i_triangle_self'
     if (!is.null(i_triangle_self)) {
@@ -351,7 +355,19 @@ SpecIterIncrement <- function(dim_self,
     strides_self <- make_strides(dim_self)
     strides_oth <- make_strides(dim_oth)
     i_comp_type_self <- make_i_comp_type(comp_type_self)
+    if (is.null(i_triangle_self))
+        i_triangle_self <- 0L
+    if (is.null(indices_orig_self)) {
+        indices_orig_self <- 0L
+        indices_dest_self <- 0L
+    }
     n_orig_dest_self <- length(indices_orig_self)
+    if (is.null(i_direction_self))
+        i_direction_self <- 0L
+    ## 'i_comp_type_self', 'indices_orig_self', and 'i_direction_self'
+    demcheck::err_comp_type_indices(i_comp_type_self = i_comp_type_self,
+                                    indices_orig_self = indices_orig_self,
+                                    i_direction_self = i_direction_self)
     methods::new("SpecIterIncrement",
                  pos_self = pos_self,
                  pos_oth = pos_oth,

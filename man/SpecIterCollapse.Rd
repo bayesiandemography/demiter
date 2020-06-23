@@ -35,6 +35,7 @@ x <- SpecIterCollapse(dim_self = c(4L, 2L, 3L),
 class(x)
 }
 \seealso{
-To create a a collapse iterator from an object of class
-\code{SpecIterCollapse}, use function \code{\link{create_iter_collapse}}.
+To create a collapse iterator from an object of class
+\code{SpecIterCollapse}, use function
+\code{\link[=collapse]{create_iter_collapse}}.
 }

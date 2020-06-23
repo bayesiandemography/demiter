@@ -56,3 +56,12 @@ make_strides <- function(dim) {
     ans <- c(1L, ans)
     ans
 }
+
+
+
+
+        
+    
+            
+
+            

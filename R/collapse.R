@@ -41,10 +41,22 @@
 #' \code{self}, and \code{TRUE} otherwise.
 #'
 #' @param spec An object of class \code{\link{SpecIterCollapse}}.
+#' @param iter A collapse iterator.
 #'
 #' @seealso \code{\link{SpecIterCollapse}}, \code{\link{cohort}},
 #' \code{\link{increment}}
 #'
+#' @examples
+#' spec <- SpecIterCollapse(dim_self = c(3, 2),
+#'                          dim_oth = 2,
+#'                          map_dim = c(1, 0),
+#'                          map_pos = list(c(1, 2, 2), c(0, 0)))
+#' iter <- iter_create_collapse(spec)
+#' for (i in 1:6) {
+#'     print(iter_has_next_collapse(iter))
+#'     print(iter_next_collapse(iter))
+#' }
+#' iter_has_next_collapse(iter)
 #' @name collapse
 NULL
 
@@ -73,7 +85,7 @@ iter_next_collapse <- function(iter) {
     pos_self <- iter$pos_self
     pos_oth <- iter$pos_oth
     n_dim_self <- iter$n_dim_self
-    n_dim_oth <- iter@n_dim_oth
+    n_dim_oth <- iter$n_dim_oth
     dim_self <- iter$dim_self
     map_dim <- iter$map_dim
     map_pos <- iter$map_pos
@@ -83,8 +95,6 @@ iter_next_collapse <- function(iter) {
     is_first <- iter$is_first
     if (is_first) {
         maps_into_oth <- all(pos_oth > 0L)
-        i_dim_self <- 1L
-        val_dim_self <- dim_self[[i_dim_self]]
         iter$is_first <- FALSE
     }
     else {
@@ -100,12 +110,16 @@ iter_next_collapse <- function(iter) {
             }
             else
                 val_pos_self <- 1L
-            val_pos_oth <- val_map_pos[[val_pos_self]]
-            if (val_pos_oth == 0L)
-                maps_into_oth <- FALSE
             pos_self[[i_dim_self]] <- val_pos_self
             i_dim_oth <- map_dim[[i_dim_self]]
-            pos_oth[[i_dim_oth]] <- val_pos_oth
+            has_dim_oth <- i_dim_oth > 0L
+            if (has_dim_oth) {
+                val_pos_oth <- val_map_pos[[val_pos_self]]
+                if (val_pos_oth > 0L)
+                    pos_oth[[i_dim_oth]] <- val_pos_oth
+                else
+                    maps_into_oth <- FALSE
+            }
             if (incremented_self || !maps_into_oth)
                 break
         }
@@ -121,7 +135,7 @@ iter_next_collapse <- function(iter) {
     }
     else
         i_oth <- rep.int(0L, times = n_offsets)
-    has_next <- (i_dim_self < n_dim_self) || (val_pos_self < val_dim_self)
+    has_next <- any(pos_self < dim_self)
     iter$pos_self <- pos_self
     iter_pos_oth <- pos_oth
     iter$has_next <- has_next

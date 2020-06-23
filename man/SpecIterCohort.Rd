@@ -43,13 +43,15 @@ traverse cohorts within that array.
 }
 \examples{
 x <- SpecIterCohort(dim = c(4, 2, 3),
-                     i_time = 3,
-                     i_age = 1,
-                     i_triangle = 2,
-                     stop_at_oldest = FALSE,
-                     offset = 0)
+                    i_time = 3,
+                    i_age = 1,
+                    i_triangle = 2,
+                    stop_at_oldest = FALSE,
+                    offset = 0)
+class(x)
 }
 \seealso{
 To create a cohort iterator from an object of class
-\code{SpecIterCohort}, use function \code{\link{iter_create_cohort}}.
+\code{SpecIterCohort}, use function
+\code{\link[=cohort]{iter_create_cohort}}.
 }
