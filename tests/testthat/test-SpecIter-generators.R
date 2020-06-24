@@ -1,6 +1,8 @@
 
 context("SpecIter-generators")
 
+## SpecIterCohort -------------------------------------------------------------
+
 test_that("SpecIterCohort creates valid SpecIterCohort object with no age", {
     ans <- SpecIterCohort(dim = 4:2,
                           i_time = 3,
@@ -39,4 +41,78 @@ test_that("SpecIterCohort creates valid SpecIterCohort object with age and trian
     expect_identical(ans@stride_triangle, 12L)
     expect_true(ans@stop_at_oldest)
 })
+
+
+## SpecIterCollapse -----------------------------------------------------------
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when 'self' and 'oth' identical", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = 4:2,
+                            map_dim = 1:3,
+                            map_pos = list(1:4, 1:3, 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when dimensions permuted", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = 2:4,
+                            map_dim = 3:1,
+                            map_pos = list(1:4, 1:3, 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when dimension collapsed", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = 3:2,
+                            map_dim = c(0, 1, 2),
+                            map_pos = list(c(0, 0, 0, 0), 1:3, 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when dimension collapsed", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = 3:2,
+                            map_dim = c(0, 1, 2),
+                            map_pos = list(c(0, 0, 0, 0), 1:3, 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when dimension subsetted", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = c(3, 3, 2),
+                            map_dim = 1:3,
+                            map_pos = list(c(1, 0, 2, 3), 1:3, 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when dimensions subsetted and collapsed", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = c(3, 2),
+                            map_dim = c(1, 0, 2),
+                            map_pos = list(c(1, 0, 2, 3), c(0, 0, 0), 1:2))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+test_that("SpecIterCollapse creates valid SpecIterCollapse object when collapsed to one cell", {
+    ans <- SpecIterCollapse(dim_self = 4:2,
+                            dim_oth = 1,
+                            map_dim = c(0, 0, 1),
+                            map_pos = list(c(0, 0, 0, 0), c(0, 0, 0), c(1, 1)))
+    expect_is(ans, "SpecIterCollapse")
+    expect_true(validObject(ans))
+})
+
+
+
+
+
+
+
+
 
