@@ -109,8 +109,72 @@ test_that("SpecIterCollapse creates valid SpecIterCollapse object when collapsed
 })
 
 
+## SpecIterIncrement ----------------------------------------------------------
 
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is increment", {
+    ans <- SpecIterIncrement(dim_self = 4:2,
+                             dim_oth = 4:2,
+                             map_dim = 1:3,
+                             comp_type_self = "increment")
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 1L)
+})
 
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is births", {
+    ans <- SpecIterIncrement(dim_self = 4:2,
+                             dim_oth = 3:2,
+                             map_dim = 0:2,
+                             comp_type_self = "increment")
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 1L)
+})
+
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is decrement", {
+    ans <- SpecIterIncrement(dim_self = 4:2,
+                             dim_oth = 4:2,
+                             map_dim = 1:3,
+                             comp_type_self = "decrement")
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 2L)
+})
+
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is orig-dest", {
+    ans <- SpecIterIncrement(dim_self = c(2, 5, 5, 3),
+                             dim_oth = c(2, 5, 3),
+                             map_dim = c(1, 2, 0, 3),
+                             comp_type_self = "orig-dest",
+                             indices_orig_self = 2,
+                             indices_dest_self = 3)
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 3L)
+})
+
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is orig-dest", {
+    ans <- SpecIterIncrement(dim_self = c(2, 5, 5, 3, 4, 4),
+                             dim_oth = c(2, 5, 3, 4),
+                             map_dim = c(1, 2, 0, 3, 4, 0),
+                             comp_type_self = "orig-dest",
+                             indices_orig_self = c(2, 5),
+                             indices_dest_self = c(3, 6))
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 3L)
+})
+
+test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is pool", {
+    ans <- SpecIterIncrement(dim_self = 4:2,
+                             dim_oth = 4:3,
+                             map_dim = c(1, 2, 0),
+                             comp_type_self = "pool",
+                             i_direction = 3)
+    expect_is(ans, "SpecIterIncrement")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_comp_type_self, 4L)
+})
 
 
 

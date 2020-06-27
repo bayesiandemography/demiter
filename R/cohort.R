@@ -133,6 +133,7 @@
 #' @name cohort
 NULL
 
+## HAS_TESTS
 #' @rdname cohort
 #' @export
 iter_create_cohort <- function(spec, i) {
@@ -174,6 +175,7 @@ iter_create_cohort <- function(spec, i) {
     ans
 }
 
+## HAS_TESTS
 #' @rdname cohort
 #' @export
 iter_next_cohort <- function(iter) {
@@ -230,7 +232,7 @@ iter_next_cohort <- function(iter) {
                         is_oldest <- pos_age == n_age
                         pos_triangle <- 1L
                         i <- i - stride_triangle
-                        is_lower <- FALSE
+                        is_lower <- TRUE
                     }
                 }
             }
@@ -276,7 +278,7 @@ iter_next_cohort <- function(iter) {
     i_vec
 }
         
-
+## HAS_TESTS
 #' @rdname cohort
 #' @export
 iter_has_next_cohort <- function(iter) {

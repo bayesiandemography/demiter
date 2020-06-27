@@ -344,7 +344,7 @@ SpecIterIncrement <- function(dim_self,
         indices_dest_self <- demcheck::err_tdy_positive_integer_vector(x = indices_dest_self,
                                                                        name = "indices_dest_self")
         demcheck::err_le_vector(x1 = indices_dest_self,
-                                x2 = length(dim_oth),
+                                x2 = length(dim_self),
                                 name1 = "indices_dest_self",
                                 name2 = "length(dim_self)")
     }
