@@ -94,50 +94,55 @@ iter_next_collapse <- function(iter) {
     offsets <- iter$offsets
     is_first <- iter$is_first
     if (is_first) {
-        maps_into_oth <- all(pos_oth > 0L)
         iter$is_first <- FALSE
     }
     else {
-        incremented_self <- FALSE
-        maps_into_oth <- TRUE
+        ## update 'pos_self'
         for (i_dim_self in seq_len(n_dim_self)) {
             val_dim_self <- dim_self[[i_dim_self]]
             val_map_pos <- map_pos[[i_dim_self]]
             val_pos_self <- pos_self[[i_dim_self]]
             if (val_pos_self < val_dim_self) {
-                val_pos_self  <- val_pos_self + 1L
-                incremented_self <- TRUE
+                pos_self[[i_dim_self]] <- val_pos_self + 1L
+                break
             }
             else
-                val_pos_self <- 1L
-            pos_self[[i_dim_self]] <- val_pos_self
-            i_dim_oth <- map_dim[[i_dim_self]]
+                pos_self[[i_dim_self]] <- 1L
+        }
+        ## update 'pos_oth'
+        for (i_dim_self_changed in seq_len(i_dim_self)) {
+            i_dim_oth <- map_dim[[i_dim_self_changed]]
             has_dim_oth <- i_dim_oth > 0L
             if (has_dim_oth) {
+                val_pos_self <- pos_self[[i_dim_self_changed]]
+                val_map_pos <- map_pos[[i_dim_self_changed]]
                 val_pos_oth <- val_map_pos[[val_pos_self]]
-                if (val_pos_oth > 0L)
-                    pos_oth[[i_dim_oth]] <- val_pos_oth
-                else
-                    maps_into_oth <- FALSE
+                pos_oth[[i_dim_oth]] <- val_pos_oth
             }
-            if (incremented_self || !maps_into_oth)
-                break
         }
     }
-    if (maps_into_oth) {
-        i_oth_first <- 1L
-        for (i_dim_oth in seq_len(n_dim_oth)) {
-            val_strides_oth <- strides_oth[[i_dim_oth]]
-            val_pos_oth <- pos_oth[[i_dim_oth]]
-            i_oth_first <- i_oth_first + val_strides_oth * (val_pos_oth - 1L)
+    ## calculate 'i_oth'
+    i_oth_first <- 1L
+    for (i_dim_oth in seq_len(n_dim_oth)) {
+        val_pos_oth <- pos_oth[[i_dim_oth]]
+        if (val_pos_oth == 0L) {
+            i_oth_first <- 0L
+            break
         }
+        else {
+            if (val_pos_oth > 1L) {
+                val_strides_oth <- strides_oth[[i_dim_oth]]
+                i_oth_first <- i_oth_first + (val_pos_oth - 1L) * val_strides_oth
+            }
+        }
+    }
+    if (i_oth_first > 0L)
         i_oth <- i_oth_first + offsets
-    }
     else
         i_oth <- rep.int(0L, times = n_offsets)
     has_next <- any(pos_self < dim_self)
     iter$pos_self <- pos_self
-    iter_pos_oth <- pos_oth
+    iter$pos_oth <- pos_oth
     iter$has_next <- has_next
     i_oth
 }

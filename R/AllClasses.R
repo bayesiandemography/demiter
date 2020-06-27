@@ -111,12 +111,13 @@ setClass("SpecIterCollapse",
              n_offsets <- object@n_offsets
              ## 'pos_self'
              val <- demcheck::chk_pos_initial(x = pos_self,
-                                              name = "pos_self")
+                                              name = "pos_self",
+                                              zero_ok = FALSE)
              if (!isTRUE(val))
                  return(val)
              ## 'pos_oth'
-             val <- demcheck::chk_pos_initial(x = pos_oth,
-                                              name = "pos_oth")
+             val <- demcheck::chk_non_negative_vector(x = pos_oth,
+                                                      name = "pos_oth")
              if (!isTRUE(val))
                  return(val)
              ## 'dim_self'
@@ -149,8 +150,8 @@ setClass("SpecIterCollapse",
                                                   name = "strides_oth")
              if (!isTRUE(val))
                  return(val)
-             val <- demcheck::chk_strictly_increasing(x = strides_oth,
-                                                      name = "strides_oth")
+             val <- demcheck::chk_increasing(x = strides_oth,
+                                             name = "strides_oth")
              if (!isTRUE(val))
                  return(val)
              ## 'offsets'
@@ -174,7 +175,7 @@ setClass("SpecIterCollapse",
                                               name2 = "dim_self")
              if (!isTRUE(val))
                  return(val)
-             val <- demcheck::chk_lt_vector(x1 = pos_self,
+             val <- demcheck::chk_le_vector(x1 = pos_self,
                                             x2 = dim_self,
                                             name1 = "pos_self",
                                             name2 = "dim_self")
@@ -201,11 +202,11 @@ setClass("SpecIterCollapse",
                                               name2 = "dim_self")
              if (!isTRUE(val))
                  return(val)
-             ## 'map_dim' and 'n_dim_self'
+             ## 'map_dim' and 'n_dim_oth'
              val <- demcheck::chk_all_x1_in_x2(x1 = map_dim,
-                                               x2 = seq_len(n_dim_self),
+                                               x2 = seq_len(n_dim_oth),
                                                name1 = "map_dim",
-                                               name2 = "seq_len(n_dim_self)",
+                                               name2 = "seq_len(n_dim_oth)",
                                                exclude_zero = TRUE)
              if (!isTRUE(val))
                  return(val)
@@ -290,14 +291,14 @@ setClass("SpecIterIncrement",
              i_direction_self = object@i_direction_self
              ## 'pos_self'
              val <- demcheck::chk_pos_initial(x = pos_self,
-                                              name = "pos_self")
+                                              name = "pos_self",
+                                              zero_ok = FALSE)
              if (!isTRUE(val))
                  return(val)
              ## 'pos_oth'
              val <- demcheck::chk_pos_initial(x = pos_oth,
-                                              name = "pos_oth")
-             if (!isTRUE(val))
-                 return(val)
+                                              name = "pos_oth",
+                                              zero_ok = FALSE)
              ## 'dim_self'
              val <- demcheck::chk_positive_dim(x = dim_self,
                                                name = "dim_self")
