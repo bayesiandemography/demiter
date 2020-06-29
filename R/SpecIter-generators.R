@@ -352,7 +352,6 @@ SpecIterIncrement <- function(dim_self,
     n_dim_oth <- length(dim_oth)
     pos_self <- rep.int(1L, times = n_dim_self)
     pos_oth <- rep.int(1L, times = n_dim_oth)
-    strides_self <- make_strides(dim_self)
     strides_oth <- make_strides(dim_oth)
     i_comp_type_self <- make_i_comp_type(comp_type_self)
     if (is.null(i_triangle_self))
@@ -375,7 +374,6 @@ SpecIterIncrement <- function(dim_self,
                  n_dim_self = n_dim_self,
                  n_dim_oth = n_dim_oth,
                  map_dim = map_dim,
-                 strides_self = strides_self,
                  strides_oth = strides_oth,
                  i_comp_type_self = i_comp_type_self,
                  i_triangle_self = i_triangle_self,

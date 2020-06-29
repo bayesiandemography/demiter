@@ -266,7 +266,6 @@ setClass("SpecIterIncrement",
                    n_dim_self = "integer",
                    n_dim_oth = "integer",
                    map_dim = "integer",
-                   strides_self = "integer",
                    strides_oth = "integer",
                    i_comp_type_self = "integer",
                    i_triangle_self = "integer",
@@ -281,7 +280,6 @@ setClass("SpecIterIncrement",
              n_dim_self <- object@n_dim_self
              n_dim_oth <- object@n_dim_oth
              map_dim <- object@map_dim
-             strides_self <- object@strides_self
              strides_oth <- object@strides_oth
              i_comp_type_self <- object@i_comp_type_self
              i_triangle_self = object@i_triangle_self
@@ -317,15 +315,6 @@ setClass("SpecIterIncrement",
              ## 'map_dim'
              val <- demcheck::chk_map_dim(x = map_dim,
                                           name = "map_dim")
-             if (!isTRUE(val))
-                 return(val)
-             ## 'strides_self'
-             val <- demcheck::chk_positive_vector(x = strides_self,
-                                                  name = "strides_self")
-             if (!isTRUE(val))
-                 return(val)
-             val <- demcheck::chk_strictly_increasing(x = strides_self,
-                                                      name = "strides_self")
              if (!isTRUE(val))
                  return(val)
              ## 'strides_oth'
@@ -374,7 +363,7 @@ setClass("SpecIterIncrement",
                                               name2 = "dim_self")
              if (!isTRUE(val))
                  return(val)
-             val <- demcheck::chk_lt_vector(x1 = pos_self,
+             val <- demcheck::chk_le_vector(x1 = pos_self,
                                             x2 = dim_self,
                                             name1 = "pos_self",
                                             name2 = "dim_self")
@@ -407,13 +396,6 @@ setClass("SpecIterIncrement",
                                                name1 = "map_dim",
                                                name2 = "seq_len(n_dim_self)",
                                                exclude_zero = TRUE)
-             if (!isTRUE(val))
-                 return(val)
-             ## 'strides_self' and 'n_dim_self'
-             val <- demcheck::chk_length_equals(x1 = strides_self,
-                                                x2 = n_dim_self,
-                                                name1 = "strides_self",
-                                                name2 = "n_dim_self")
              if (!isTRUE(val))
                  return(val)
              ## 'strides_oth' and 'n_dim_oth'

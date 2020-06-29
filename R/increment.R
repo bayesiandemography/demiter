@@ -114,14 +114,13 @@ NULL
 #' @rdname increment
 #' @export
 iter_create_increment <- function(spec) {
-    ans <- new.env(size = 16L)
+    ans <- new.env(size = 15L)
     ans$pos_self <- spec@pos_self
     ans$pos_oth <- spec@pos_oth
     ans$dim_self <- spec@dim_self
     ans$n_dim_self <- spec@n_dim_self
     ans$n_dim_oth <- spec@n_dim_oth
     ans$map_dim <- spec@map_dim
-    ans$strides_self <- spec@strides_self
     ans$strides_oth <- spec@strides_oth
     ans$i_triangle_self <- spec@i_triangle_self
     ans$i_comp_type_self <- spec@i_comp_type_self
@@ -143,7 +142,6 @@ iter_next_increment <- function(iter) {
     n_dim_self <- iter$n_dim_self
     n_dim_oth <- iter$n_dim_oth
     map_dim <- iter$map_dim
-    strides_self <- iter$strides_self
     strides_oth <- iter$strides_oth
     i_triangle_self <- iter$i_triangle_self
     i_comp_type_self <- iter$i_comp_type_self
@@ -200,23 +198,21 @@ iter_next_increment <- function(iter) {
         for (i_orig_dest in seq_len(n_orig_dest_self)) {
             i_orig_self <- indices_orig_self[[i_orig_dest]]
             i_dest_self <- indices_dest_self[[i_orig_dest]]
-            stride_orig <- strides_self[[i_orig_self]]
-            stride_dest <- strides_self[[i_dest_self]]
             pos_orig <- pos_self[[i_orig_self]]
             pos_dest <- pos_self[[i_dest_self]]
-            offset_dest <- (offset_dest
-                - (pos_orig - 1L) * stride_orig
-                + (pos_dest - 1L) * stride_dest)
+            i_orig_dest_oth <- map_dim[[i_orig_self]]
+            stride_orig_dest_oth <- strides_oth[[i_orig_dest_oth]]
+            offset_dest <- offset_dest + (pos_dest - pos_orig) * stride_orig_dest_oth
         }
         i_oth[[2L]] <- i_oth_base + offset_dest
         i_oth[[3L]] <- i_oth_base
     }
     else if (i_comp_type_self == 4L) { # pool
-        is_in <- pos_self[[i_direction_self]] == 1L
-        if (is_in)
-            i_oth[[2L]] <- i_oth_base
-        else
+        is_out <- pos_self[[i_direction_self]] == 1L
+        if (is_out)
             i_oth[[3L]] <- i_oth_base
+        else
+            i_oth[[2L]] <- i_oth_base
     }
     else
         stop(gettextf("invalid value for '%s' : %d",
