@@ -54,8 +54,8 @@ in arrays of increments or decrements.
 }
 \examples{
 x <- SpecIterIncrement(dim_self = c(4, 2, 3),
-                       dim_oth = c(4, 2, 3),
-                       map_dim = c(1, 2, 3),
+                       dim_oth = c(4, 3),
+                       map_dim = c(1, 0, 2),
                        comp_type_self = "increment",
                        i_triangle_self = 2)
 class(x)

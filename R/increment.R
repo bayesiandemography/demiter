@@ -1,51 +1,36 @@
 
-## If 'self' has one or more origin-destination
-## pairs of dimensions, then the origin destination
-## in each pair maps on to 'oth', and the 'destination'
-## dimension does not.
-
-## Assume 'self' and 'oth' both have regular age-time strides.
-
-## Assume 'self' and 'oth' do not have cohort dimensions.
-
-## If 'self' is births, any 'age' refers to the mother,
-## rather than the child, and does not count as
-## an 'age' dimension - or a shared dimension at all
-## by the iterator.
-
-## 'self' has a triangle dimension iff it
-## has an age dimension. 'oth' never has a triangle dimension.
-
-## every cell in 'self' maps on to a cell in (one of the) 'oth'
-
-## Last age group is open. (Age of mother in births does not count.)
-
 #' Increment iterators
 #'
 #' An increment iterator traverses array \code{self}
-#' giving the indices for associated arrays of (net) increments.
-#'
+#' giving the indices for an associated array, or pair of arrays,
+#' of (net) increments. Every cell in \code{self} maps on
+#' to a single cell in the associated array(s). Every cell
+#' in the associated array(s) maps on to one or more cells
+#' in \code{self}.
+#' 
 #' Array \code{self} describes events, such as births,
 #' deaths, or migration, that affect the size and structure
-#' of a population. Array \code{self} must have a dimension with
-#' dimtype \code{"time"}, consisting of intervals of equal lengths.
-#' If \code{self} has a dimension with dimtype \code{"age"}, then
-#' that dimenions must consist of intervals with equal lengths,
-#' except for the last interval, which must be open. In addition,
-#' if \code{self} has an age dimension, then \code{self}
-#' must also have a dimension with dimtype \code{"triangle"}.
+#' of a population. Array \code{self} must have a time dimension.
+#' It may have an age dimension. If it does, it must also have a
+#' triangle dimension. It may not have have cohort dimension.
 #'
-#' If \code{self} does not have age and triangle dimensions
-#' then there is a single \code{oth} array. The \code{oth} array
-#' describes the effect of the component on population size
-#' at the end of each period.
-#' If \code{self} does have age and triangle dimensions, then there
-#' are two \code{oth} arrays. The first \code{oth} array describes the
-#' effect of the component on population at the end of each period,
-#' which is calculated from lower Lexis triangles. The second \code{oth}
-#' array records the effect of the component on accession to the
-#' next age group during each period, which is calculated from upper
-#' Lexis triangles.
+#' Array \code{self} must have positive length. None of
+#' its dimensions can have length zero.
+#' 
+#' If \code{self} has pairs of origin-destination dimensions
+#' or parent-child dimensions, then the destination dimensions
+#' or child dimensions are mapped into \code{oth}. The origin
+#' diemnsions or parent dimensions are dropped. The rule
+#' that parent dimensions are dropped extends to the age
+#' dimension when \code{self} is births. Age in this case
+#' refers to the parent, and so is not included in \code{oth}.
+#'
+#' If \code{self} does not have age and triangle dimensions,
+#' then there is a single \code{oth} array holding net increments.
+#' If \code{self} does have age and triangle dimensions,
+#' then there are two \code{oth} arrays. The first \code{oth} array
+#' holds increments derived from lower Lexis triangles, and the second
+#' \code{oth} array holds increments derived from upper Lexis triangles.
 #'
 #' If \code{self} and \code{oth} share a dimension, then the two
 #' versions of the dimension must match exactly, in that they
@@ -55,39 +40,37 @@
 #' for \code{oth} will consist of points, while the
 #' time dimension of \code{self} consists of intervals.
 #'
-#' If \code{self} is births, and has a dimension with dimtype
-#' \code{"age"}, then age refers to the parent,
-#' not to the child. However, births increase the number of children,
-#' not the number of people of child-bearing age. 
-#' The age dimension in \code{self} therefore does not
-#' correspond to the age dimension in the associated array
-#' of increments.
-#'
-#' The array \code{self} can belong to one of four types: increment, decrement,
-#' origin-destination, and pool. Arrays of births or immigrations
-#' are examples of increments. If \code{self} is an increment array,
+#' The array \code{self} can belong to one of four types:
+#' \code{"increment"}, \code{"decrement"},\code{"orig-dest"},
+#' and \code{"pool"}. Arrays of births or immigrations
+#' are examples of increments. If \code{self} is an increment array, then
 #' the value in each cell of \code{self} is added to the value of the
-#' associated cell in  \code{oth}. Arrays of deaths or emigrations
+#' associated cell in \code{oth}. Arrays of deaths or emigrations
 #' are examples of decrements. If \code{self} is a decrement array,
-#' the value in each cell of \code{self} is subtracted from the
+#' then the value in each cell of \code{self} is subtracted from the
 #' value of the associated cell in \code{oth}.
-#' Origin-destination arrays and pool arrays are different ways of
+#' Orig-dest and pool arrays are different ways of
 #' representing movements between regions or other statuses. The
 #' value in each cell of \code{self} is subtracted from one
-#' cell in \code{oth} and added to another cell.
+#' cell in \code{oth} and added to another cell in \code{oth}.
+#' The cell that is subtracted from and the cell that is added to
+#' can be the same, so that the net increment is zero.
 #'
 #' Function \code{iter_next_cohort} returns an integer vector of length
 #' three. The first element of this vector takes a value of \code{1}
-#' if \code{oth} represents population at the end of the period,
-#' and a value of \code{2} if \code{oth} represents accession
-#' during the period. The second element of the integer vector
-#' gives the index of the cell in \code{oth} whose value should
-#' be increased by the value of the cell in \code{self}. If
-#' contributes to increasing. If \code{self} is a decrement
-#' array, then the second element is \code{0}. The third element of the
-#' integer vector gives the index of the cell in \code{oth} whose value
-#' should be decreased by the value of the cell in \code{self}. If
-#' \code{self} is an increment array, then the third element is \code{0}.
+#' if there is a single \code{oth} array; a value of \code{2} if there
+#' are two \code{oth} arrays, and the cell of \code{self}
+#' maps on to the array for lower Lexis triangles; and
+#' a value of \code{3} if there are two \code{oth} arrays
+#' and the cell of \code{self} maps on to the
+#' array for upper Lexis triangles. The second element of the integer vector
+#' gives the index of the cell in the \code{oth} array
+#' that is to be incremented. If no cell in the \code{oth} array is
+#' to be incremented, then the index is \code{0}.
+#'  The third element of the integer vector gives the index of the cell
+#' in the \code{oth} array whose value that is to be decremented.
+#' if no cell in the \code{oth} array is to be decremented,
+#' then the index is is \code{0}.
 #'
 #' @param spec An object of class \code{\link{SpecIterIncrement}}.
 #' @param iter An increment iterator.
@@ -98,10 +81,10 @@
 #' @examples
 #' spec <- SpecIterIncrement(dim_self = c(3, 3),
 #'                           dim_oth = 3,
-#'                           map_dim = c(1, 0),
+#'                           map_dim = c(0, 1),
 #'                           comp_type_self = "orig-dest",
 #'                           indices_orig_self = 1,
-#'                           indices_dest_self = 1)
+#'                           indices_dest_self = 2)
 #' iter <- iter_create_increment(spec)
 #' for (i in 1:9) {
 #'     print(iter_has_next_increment(iter))
@@ -156,6 +139,7 @@ iter_next_increment <- function(iter) {
         iter$is_first <- FALSE
     }
     else {
+        incremented_self <- FALSE
         for (i_dim_self in seq_len(n_dim_self)) {
             val_dim_self <- dim_self[[i_dim_self]]
             val_pos_self <- pos_self[[i_dim_self]]
@@ -176,13 +160,17 @@ iter_next_increment <- function(iter) {
     }
     ## Step 2: Generate vector of length 3 containing indices of array,
     ## increment and decrement
+    i_oth <- c(0L, 0L, 0L)
     has_triangle <- i_triangle_self > 0L
-    i_oth <- c(1L, 0L, 0L) ## 1 in first position signifies popn at end of period
     if (has_triangle) {
-        is_upper <- pos_self[[i_triangle_self]] == 2L
-        if (is_upper)
-            i_oth[[1L]] <- 2L ## 2 in first position signifies attrition during period
+        is_lower <- pos_self[[i_triangle_self]] == 1L
+        if (is_lower)
+            i_oth[[1L]] <- 2L
+        else
+            i_oth[[1L]] <- 3L
     }
+    else
+        i_oth[[1L]] <- 1L
     i_oth_base <- 1L
     for (i_dim_oth in seq_len(n_dim_oth)) {
         val_strides_oth <- strides_oth[[i_dim_oth]]
@@ -194,18 +182,18 @@ iter_next_increment <- function(iter) {
     else if (i_comp_type_self == 2L) # decrement
         i_oth[[3]] <- i_oth_base
     else if (i_comp_type_self == 3L) { # orig-dest
-        offset_dest <- 0L
+        offset_orig <- 0L
         for (i_orig_dest in seq_len(n_orig_dest_self)) {
             i_orig_self <- indices_orig_self[[i_orig_dest]]
             i_dest_self <- indices_dest_self[[i_orig_dest]]
             pos_orig <- pos_self[[i_orig_self]]
             pos_dest <- pos_self[[i_dest_self]]
-            i_orig_dest_oth <- map_dim[[i_orig_self]]
+            i_orig_dest_oth <- map_dim[[i_dest_self]]
             stride_orig_dest_oth <- strides_oth[[i_orig_dest_oth]]
-            offset_dest <- offset_dest + (pos_dest - pos_orig) * stride_orig_dest_oth
+            offset_orig <- offset_orig + (pos_orig - pos_dest) * stride_orig_dest_oth
         }
-        i_oth[[2L]] <- i_oth_base + offset_dest
-        i_oth[[3L]] <- i_oth_base
+        i_oth[[2L]] <- i_oth_base
+        i_oth[[3L]] <- i_oth_base + offset_orig
     }
     else if (i_comp_type_self == 4L) { # pool
         is_out <- pos_self[[i_direction_self]] == 1L

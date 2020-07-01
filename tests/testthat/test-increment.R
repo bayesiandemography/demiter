@@ -6,8 +6,8 @@ context("increment")
 test_that("increment iterator works when 'self' is increments and dimensions of 'self' and 'oth' identical", {
     spec <- SpecIterIncrement(dim_self = 4:3,
                               dim_oth = 4:3,
-                             map_dim = 1:2,
-                             comp_type_self = "increment")
+                              map_dim = 1:2,
+                              comp_type_self = "increment")
     iter <- iter_create_increment(spec)
     for (i in 1:12) {
         expect_true(iter_has_next_increment(iter))
@@ -32,7 +32,7 @@ test_that("increment iterator works when 'self' is decrements and dimensions of 
 test_that("increment iterator works when 'self' consists of orig-dest pair", {
     spec <- SpecIterIncrement(dim_self = c(4L, 4L, 1L),
                               dim_oth = c(4L, 1L),
-                              map_dim = c(1L, 0L, 2L),
+                              map_dim = c(0L, 1L, 2L),
                               comp_type_self = "orig-dest",
                               indices_orig_self = 1L,
                               indices_dest_self = 2L)
@@ -50,7 +50,7 @@ test_that("increment iterator works when 'self' consists of orig-dest pair", {
 test_that("increment iterator works when 'self' consists of orig-dest pair plus one dimension", {
     spec <- SpecIterIncrement(dim_self = c(2L, 4L, 4L),
                               dim_oth = c(2L, 4L),
-                              map_dim = c(1L, 2L, 0L),
+                              map_dim = c(1L, 0L, 2L),
                               comp_type_self = "orig-dest",
                               indices_orig_self = 2L,
                               indices_dest_self = 3L)
@@ -71,7 +71,7 @@ test_that("increment iterator works when 'self' consists of orig-dest pair plus 
 test_that("increment iterator works when 'self' consists of two orig-dest pairs", {
     spec <- SpecIterIncrement(dim_self = c(3L, 3L, 4L, 4L),
                               dim_oth = c(3L, 4L),
-                              map_dim = c(0L, 1L, 0L, 2L),
+                              map_dim = c(1L, 0L, 2L, 0L),
                               comp_type_self = "orig-dest",
                               indices_orig_self = c(2L, 4L),
                               indices_dest_self = c(1L, 3L))
@@ -79,7 +79,7 @@ test_that("increment iterator works when 'self' consists of two orig-dest pairs"
     ans <- cbind(rep(1L, times = 144),
                  rep(1:3, times = 48) + rep(c(0L, 3L, 6L, 9L), each = 9),
                  rep(1:3, each = 3) + rep(c(0L, 3L, 6L, 9L), each = 36))
-    for (i in 1:144) {
+  for (i in 1:144) {
         expect_true(iter_has_next_increment(iter))
         expect_identical(ans[i, ], iter_next_increment(iter))
     }
@@ -130,7 +130,7 @@ test_that("increment iterator works when 'self' is increments and dimensions of 
                               comp_type_self = "increment",
                               i_triangle_self = 3L)
     iter <- iter_create_increment(spec)
-    ans <- cbind(rep(1:2, each = 12),
+    ans <- cbind(rep(2:3, each = 12),
                  rep(1:12, times = 2),
                  0L)
     for (i in 1:24) {
@@ -147,7 +147,7 @@ test_that("increment iterator works when 'self' is decrements and dimensions of 
                               comp_type_self = "decrement",
                               i_triangle_self = 2L)
     iter <- iter_create_increment(spec)
-    ans <- cbind(rep(rep(1:2, each = 4), times = 3),
+    ans <- cbind(rep(rep(2:3, each = 4), times = 3),
                  0L,
                  c(rep(1:4, times = 2),
                    rep(5:8, times = 2),
@@ -162,13 +162,13 @@ test_that("increment iterator works when 'self' is decrements and dimensions of 
 test_that("increment iterator works when 'self' consists of orig-dest pair plus three dimensions - triangle", {
     spec <- SpecIterIncrement(dim_self = c(2L, 4L, 4L, 3L, 2L),
                               dim_oth = c(2L, 4L, 3L),
-                              map_dim = c(1L, 2L, 0L, 3L, 0L),
+                              map_dim = c(1L, 0L, 2L, 3L, 0L),
                               comp_type_self = "orig-dest",
                               indices_orig_self = 2L,
                               indices_dest_self = 3L,
                               i_triangle = 5L)
     iter <- iter_create_increment(spec)
-    ans <- cbind(rep(1:2, each = 96),
+    ans <- cbind(rep(2:3, each = 96),
                  c(rep(1:2, times = 4),
                    rep(3:4, times = 4),
                    rep(5:6, times = 4),

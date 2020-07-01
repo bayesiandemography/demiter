@@ -144,7 +144,7 @@ test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' 
 test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is orig-dest", {
     ans <- SpecIterIncrement(dim_self = c(2, 5, 5, 3),
                              dim_oth = c(2, 5, 3),
-                             map_dim = c(1, 2, 0, 3),
+                             map_dim = c(1, 0, 2, 3),
                              comp_type_self = "orig-dest",
                              indices_orig_self = 2,
                              indices_dest_self = 3)
@@ -156,7 +156,7 @@ test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' 
 test_that("SpecIterIncrement creates valid SpecIterIncrement object when 'self' is orig-dest", {
     ans <- SpecIterIncrement(dim_self = c(2, 5, 5, 3, 4, 4),
                              dim_oth = c(2, 5, 3, 4),
-                             map_dim = c(1, 2, 0, 3, 4, 0),
+                             map_dim = c(1, 0, 2, 3, 0, 4),
                              comp_type_self = "orig-dest",
                              indices_orig_self = c(2, 5),
                              indices_dest_self = c(3, 6))

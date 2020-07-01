@@ -1,4 +1,146 @@
 
+
+## #' Create an object of class "SpecIterAccount"
+## #'
+## #' Create an object of class \code{SpecIterAccount} that
+## #' contains the information needed to construct an
+## #' iterator for a particular array. The iterators
+## #' traverse accounts within that array.
+## #'
+## #' @param dim An integer vector. The dimensions of the array.
+## #' @param i_time The index for the time dimension of the array.
+## #' @param i_age The index for the age dimension of the array.
+## #' Equal to \code{NULL} if the array does not have an age dimension.
+## #'
+## #' @return An object of class \code{SpecIterAccount}.
+## #'
+## #' @seealso To create a account iterator from an object of class
+## #' \code{SpecIterAccount}, use function
+## #' \code{\link[=account]{iter_create_account}}.
+## #'
+## #' @examples
+## #' x <- SpecIterAccount(dim = c(4, 2, 3),
+## #'                      i_time = 3,
+## #'                      i_age = 1)
+## #' class(x)
+## #' @export
+## SpecIterAccount <- function(dim, i_time, i_age = NULL) {
+##     ## 'dim'
+##     demcheck::err_positive_length(x = dim,
+##                                   name = "dim")
+##     dim <- demcheck::err_tdy_positive_integer_vector(x = dim,
+##                                                      name = "dim")
+##     ## 'i_time'
+##     i_time <- demcheck::err_tdy_positive_integer_scalar(x = i_time,
+##                                                         name = "i_time",
+##                                                         null_ok = FALSE)
+##     ## 'i_age'
+##     i_age <- demcheck::err_tdy_positive_integer_scalar(x = i_age,
+##                                                        name = "i_age",
+##                                                        null_ok = TRUE)
+##     ## 'dim', 'i_time'
+##     demcheck::err_le_scalar(x1 = i_time,
+##                             x2 = length(dim),
+##                             name1 = "i_time",
+##                             name2 = "length(dim)")
+##     ## 'dim', 'i_age'
+##     if (!is.null(i_age)) {
+##         demcheck::err_le_scalar(x1 = i_age,
+##                                 x2 = length(dim),
+##                                 name1 = "i_age",
+##                                 name2 = "length(dim)")
+##     }
+##     ## 'i_time', 'i_age'
+##     ## (NULLs are zapped)
+##     val <- demcheck::chk_indices_distinct(indices = list(i_time, i_age),
+##                                           names = c("i_time", "i_age"),
+##                                           exclude_zero = FALSE)
+##     if (!isTRUE(val))
+##         return(val)
+##     ## convert NULLs to 0s or NA
+##     if (is.null(i_age))
+##         i_age <- 0L
+##     ## n_time, n_age
+##     n_time <- dim_self[[i_time]]
+##     err_dim_min_length(length_actual = n_time,
+##                        length_min = 2L,
+##                        name = "time")
+##     if (i_age > 0L) {
+##         n_age <- dim_self[[i_age]]
+##         err_dim_min_length(length_actual = n_age,
+##                            length_min = 2L,
+##                            name = "age")
+##     }
+##     else
+##         n_age <- 0L
+##     ## 'stride_self'
+##     strides_self <- make_strides(dim_self)
+##     ## 'strides_init'
+##     if (n_dim_self > 1L) {
+##         dim_init <- dim_self[-i_time]
+##         strides_init <- make_strides(dim_init)
+##     }
+##     else
+##         strides_init <- 1L
+##     ## 'strides_notri'
+    
+##     if (age > 0L)
+##         dim_upper_lower <- 
+
+
+
+
+
+
+
+##     ## 'n'
+##     n_time <- dim[[i_time]]
+##     if (i_age > 0L)
+##         n_age <- dim[[i_age]]
+##     else
+##         n_age <- 0L
+##     ## 'strides'
+##     strides <- make_strides(dim)
+##     stride_time <- strides[[i_time]]
+##     if (i_age > 0L)
+##         stride_age <- strides[[i_age]]
+##     else
+##         stride_age  <- 0L
+##     if (i_triangle > 0L)
+##         stride_triangle <- strides[[i_triangle]]
+##     else
+##         stride_triangle  <- 0L
+##     ## 'n_offsets'
+##     n_offsets <- length(offsets)
+##     ## return value
+##     methods::new("SpecIterAccount",
+##                  n_time = n_time,
+##                  n_age = n_age,
+##                  stride_time = stride_time,
+##                  stride_age = stride_age,
+##                  stride_triangle = stride_triangle,
+##                  stop_at_oldest = stop_at_oldest,
+##                  offsets = offsets,
+##                  n_offsets = n_offsets)
+## }
+
+
+
+
+## chk_dim_min_length <- function(length_actual, length_min, dimtype) {
+##     if (length_actual < length_min)
+##         return(gettextf("length of %d dimension [%d] less than %d",
+##                         name, length_actual, length_min))
+##     TRUE
+## }
+    
+    
+
+
+
+
+
+
 #' Create an object of class "SpecIterCohort"
 #'
 #' Create an object of class \code{SpecIterCohort} that
@@ -86,6 +228,11 @@ SpecIterCohort <- function(dim, i_time, i_age = NULL, i_triangle = NULL,
                                   name = "offsets")
     demcheck::err_strictly_increasing(x = offsets,
                                       name = "offsets")
+    ## 'dim', 'i_time'
+    demcheck::err_le_scalar(x1 = i_time,
+                            x2 = length(dim),
+                            name1 = "i_time",
+                            name2 = "length(dim)")
     ## 'dim', 'i_age'
     if (!is.null(i_age)) {
         demcheck::err_le_scalar(x1 = i_age,
@@ -269,8 +416,8 @@ SpecIterCollapse <- function(dim_self, dim_oth, map_dim, map_pos) {
 #'
 #' @examples
 #' x <- SpecIterIncrement(dim_self = c(4, 2, 3),
-#'                        dim_oth = c(4, 2, 3),
-#'                        map_dim = c(1, 2, 3),
+#'                        dim_oth = c(4, 3),
+#'                        map_dim = c(1, 0, 2),
 #'                        comp_type_self = "increment",
 #'                        i_triangle_self = 2)
 #' class(x)
@@ -309,16 +456,10 @@ SpecIterIncrement <- function(dim_self,
                                 x2 = length(dim_self),
                                 name1 = "i_triangle_self",
                                 name2 = "length(dim_self)")
-    }
-    ## 'i_direction_self'
-    if (!is.null(i_direction_self)) {
-        i_direction_self <- demcheck::err_tdy_positive_integer_scalar(x = i_direction_self,
-                                                                      name = "i_direction_self",
-                                                                      null_ok = FALSE)
-        demcheck::err_le_scalar(x1 = i_direction_self,
-                                x2 = length(dim_self),
-                                name1 = "i_direction_self",
-                                name2 = "length(dim_self)")
+        demcheck::err_omitted(index = i_triangle_self,
+                              map_dim = map_dim,
+                              name_index = "i_triangle_self",
+                              name_dim = "triangle")
     }
     ## 'indices_orig_self'
     if (!is.null(indices_orig_self)) {
@@ -330,6 +471,10 @@ SpecIterIncrement <- function(dim_self,
                                 x2 = length(dim_self),
                                 name1 = "indices_orig_self",
                                 name2 = "length(dim_self)")
+        demcheck::err_omitted(index = indices_orig_self,
+                              map_dim = map_dim,
+                              name_index = "indices_orig_self",
+                              name_dim = "origin")
     }
     ## 'indices_dest_self'
     demcheck::err_null_ifonlyif_null(x1 = indices_dest_self,
@@ -347,7 +492,26 @@ SpecIterIncrement <- function(dim_self,
                                 x2 = length(dim_self),
                                 name1 = "indices_dest_self",
                                 name2 = "length(dim_self)")
+        demcheck::err_not_omitted(index = indices_dest_self,
+                                  map_dim = map_dim,
+                                  name_index = "indices_dest_self",
+                                  name_dim = "destination")
     }
+    ## 'i_direction_self'
+    if (!is.null(i_direction_self)) {
+        i_direction_self <- demcheck::err_tdy_positive_integer_scalar(x = i_direction_self,
+                                                                      name = "i_direction_self",
+                                                                      null_ok = FALSE)
+        demcheck::err_le_scalar(x1 = i_direction_self,
+                                x2 = length(dim_self),
+                                name1 = "i_direction_self",
+                                name2 = "length(dim_self)")
+        demcheck::err_omitted(index = i_direction_self,
+                              map_dim = map_dim,
+                              name_index = "i_direction_self",
+                              name_dim = "direction")
+    }
+    ## derived values
     n_dim_self <- length(dim_self)
     n_dim_oth <- length(dim_oth)
     pos_self <- rep.int(1L, times = n_dim_self)
