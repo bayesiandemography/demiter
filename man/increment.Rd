@@ -54,7 +54,7 @@ holds increments derived from lower Lexis triangles, and the second
 If \code{self} and \code{oth} share a dimension, then the two
 versions of the dimension must match exactly, in that they
 have exactly the same categories in exactly the same order.
-The one partial exception to this rule is time. If \code{oth}
+The one partial exception to this rule for time. If \code{oth}
 is population at the end of the period, then the time dimension
 for \code{oth} will consist of points, while the
 time dimension of \code{self} consists of intervals.
@@ -76,20 +76,32 @@ The cell that is subtracted from and the cell that is added to
 can be the same, so that the net increment is zero.
 
 Function \code{iter_next_cohort} returns an integer vector of length
-three. The first element of this vector takes a value of \code{1}
-if there is a single \code{oth} array; a value of \code{2} if there
-are two \code{oth} arrays, and the cell of \code{self}
-maps on to the array for lower Lexis triangles; and
-a value of \code{3} if there are two \code{oth} arrays
-and the cell of \code{self} maps on to the
-array for upper Lexis triangles. The second element of the integer vector
-gives the index of the cell in the \code{oth} array
-that is to be incremented. If no cell in the \code{oth} array is
-to be incremented, then the index is \code{0}.
- The third element of the integer vector gives the index of the cell
-in the \code{oth} array whose value that is to be decremented.
-if no cell in the \code{oth} array is to be decremented,
-then the index is is \code{0}.
+three.
+
+The first element of the integer vector identifies the array
+\code{oth} of increments that the current cell in\code{self}
+contributes to. A value of \code{1} indicates that \code{self}
+does not have age or triangle dimensions,
+and that the cell contributes to an array of
+'no-triangle' increments. A value of \code{2} or \code{3}
+indicates that \code{self} does have age and triangle dimensions.
+A value of \code{2} indicates that the current cell of \code{self}
+belongs to a lower Lexis triangle, and contributes to
+an array of 'lower-triangle' increments. A value of \code{3}
+indicates that the current cell of \code{self}
+belongs to an upper Lexis triangle, and contributes to
+an array of 'upper-triangle' increments.
+
+The second element of the integer vector returned by
+\code{iter_next_cohort}
+gives the index of the cell in \code{oth}
+that is incremented. If no cell in \code{oth} is
+incremented, then the value is \code{0}.
+
+The third element of the integer vector returned by
+\code{iter_next_cohort} gives the index of the cell
+\code{oth} that is decremented. If no cell in \code{oth}
+is decremented, then the value is \code{0}.
 }
 \examples{
 spec <- SpecIterIncrement(dim_self = c(3, 3),

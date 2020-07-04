@@ -1,6 +1,27 @@
 
 context("SpecIter-generators")
 
+## SpecIterAccount ------------------------------------------------------------
+
+test_that("SpecIterAccount creates valid SpecIterAccount object with no age", {
+    ans <- SpecIterAccount(dim = 4:2,
+                           i_time = 3)
+    expect_is(ans, "SpecIterAccount")
+    expect_true(validObject(ans))
+    expect_identical(ans@n_age_self, 0L)
+})
+
+test_that("SpecIterAccount creates valid SpecIterAccount object with age", {
+    ans <- SpecIterAccount(dim = 4:2,
+                           i_age = 1,
+                           i_time = 3)
+    expect_is(ans, "SpecIterAccount")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_age_self, 1L)
+    expect_identical(ans@n_age_self, 4L)
+})
+
+
 ## SpecIterCohort -------------------------------------------------------------
 
 test_that("SpecIterCohort creates valid SpecIterCohort object with no age", {

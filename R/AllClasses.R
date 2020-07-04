@@ -2,6 +2,141 @@
 setClass("SpecIter",
          contains = "VIRTUAL")
 
+
+setClass("SpecIterAccount",
+         contains = "SpecIter",
+         slots = c(pos_self = "integer",
+                   dim_self = "integer",
+                   n_dim_self = "integer",
+                   i_time_self = "integer",
+                   i_age_self = "integer",
+                   n_age_self = "integer",
+                   strides_self = "integer",
+                   strides_initial = "integer",
+                   strides_births = "integer",
+                   strides_lower_upper = "integer"),
+         validity = function(object) {
+             pos_self <- object@pos_self
+             dim_self <- object@dim_self
+             n_dim_self <- object@n_dim_self
+             i_time_self <- object@i_time_self
+             i_age_self <- object@i_age_self
+             n_age_self <- object@n_age_self
+             strides_self <- object@strides_self
+             strides_initial <- object@strides_initial
+             strides_births <- object@strides_births
+             strides_lower_upper = object@strides_lower_upper
+             ## 'pos_self'
+             val <- demcheck::chk_pos_initial(x = pos_self,
+                                              name = "pos_self",
+                                              zero_ok = FALSE)
+             if (!isTRUE(val))
+                 return(val)
+             ## 'dim_self'
+             val <- demcheck::chk_positive_dim(x = dim_self,
+                                               name = "dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'n_dim_self'
+             val <- demcheck::chk_positive_scalar(x = n_dim_self,
+                                                  name = "n_dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'i_time_self'
+             val <- demcheck::chk_positive_scalar(x = i_time_self,
+                                                  name = "i_time_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'i_age_self'
+             val <- demcheck::chk_non_negative_scalar(x = i_age_self,
+                                                      name = "i_age_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'n_age_self'
+             val <- demcheck::chk_non_negative_scalar(x = n_age_self,
+                                                      name = "n_age_self")
+             if (!isTRUE(val))
+                 return(val)
+             if (n_age_self > 0L) {
+                 val <- demcheck::chk_dim_min_length(length_actual = n_age_self,
+                                                     length_min = 2L,
+                                                     name = "age")
+                 if (!isTRUE(val))
+                     return(val)
+             }
+             ## 'strides_self', 'strides_initial', 'strides_births', 'strides_lower_upper'
+             for (name in c("strides_self",
+                            "strides_initial",
+                            "strides_births",
+                            "strides_lower_upper")) {
+                 x <- slot(object, name)
+                 val <- demcheck::chk_positive_vector(x = x,
+                                                      name = name)
+                 if (!isTRUE(val))
+                     return(val)
+                 val <- demcheck::chk_strictly_increasing(x = x,
+                                                          name = name)
+                 if (!isTRUE(val))
+                     return(val)
+             }
+             ## 'dim_self' and 'pos_self'
+             val <- demcheck::chk_length_same(x1 = pos_self,
+                                              x2 = dim_self,
+                                              name1 = "pos_self",
+                                              name2 = "dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             val <- demcheck::chk_le_vector(x1 = pos_self,
+                                            x2 = dim_self,
+                                            name1 = "pos_self",
+                                            name2 = "dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'n_dim_self' and 'dim_self'
+             val <- demcheck::chk_length_equals(x1 = dim_self,
+                                                x2 = n_dim_self,
+                                                name1 = "dim_self",
+                                                name2 = "n_dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'strides_self' and 'n_dim_self'
+             val <- demcheck::chk_length_equals(x1 = strides_self,
+                                                x2 = n_dim_self,
+                                                name1 = "strides_self",
+                                                name2 = "n_dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'strides_initial' and 'n_dim_self'
+             val <- demcheck::chk_length_equals(x1 = strides_initial,
+                                                x2 = n_dim_self - 1L,
+                                                name1 = "strides_initial",
+                                                name2 = "n_dim_self - 1")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'strides_births' and 'n_dim_self'
+             if (i_age_self > 0L)
+                 val <- demcheck::chk_length_equals(x1 = strides_births,
+                                                    x2 = n_dim_self - 1L,
+                                                    name1 = "strides_births",
+                                                    name2 = "n_dim_self - 1")
+             else
+                 val <- demcheck::chk_length_equals(x1 = strides_births,
+                                                    x2 = n_dim_self,
+                                                    name1 = "strides_births",
+                                                    name2 = "n_dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             ## 'strides_lower_upper' and 'n_dim_self'
+             val <- demcheck::chk_length_equals(x1 = strides_lower_upper,
+                                                x2 = n_dim_self,
+                                                name1 = "strides_lower_upper",
+                                                name2 = "n_dim_self")
+             if (!isTRUE(val))
+                 return(val)
+             TRUE
+          })
+
+
 setClass("SpecIterCohort",
          contains = "SpecIter",
          slots = c(n_time = "integer",
@@ -83,7 +218,6 @@ setClass("SpecIterCohort",
                  return(val)
              TRUE    
          })
-
 
 
 setClass("SpecIterCollapse",

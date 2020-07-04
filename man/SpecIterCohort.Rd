@@ -37,9 +37,9 @@ An object of class \code{SpecIterCohort}.
 }
 \description{
 Create an object of class \code{SpecIterCohort} that
-contains the information needed to construct an
-iterator for a particular array. The iterators
-traverse cohorts within that array.
+contains the information needed to construct iterators
+to traverse cohorts within arrays with a particular
+set of dimensions
 }
 \examples{
 x <- SpecIterCohort(dim = c(4, 2, 3),

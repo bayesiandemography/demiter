@@ -1,152 +1,116 @@
 
+#' Create an object of class "SpecIterAccount"
+#'
+#' Create an object of class \code{SpecIterAccount} that
+#' contains the information needed to construct
+#' account iterators for an array of population counts.
+#'
+#' @param dim An integer vector. The dimensions of the array.
+#' @param i_time The index for the time dimension of the array.
+#' @param i_age The index for the age dimension of the array,
+#' or \code{NULL} if the array does not have an age dimension.
+#'
+#' @return An object of class \code{SpecIterAccount}.
+#'
+#' @seealso To create a account iterator from an object of class
+#' \code{SpecIterAccount}, use function
+#' \code{\link[=account]{iter_create_account}}.
+#'
+#' @examples
+#' x <- SpecIterAccount(dim = c(4, 2, 3),
+#'                      i_time = 3,
+#'                      i_age = 1)
+#' class(x)
+#' @export
+SpecIterAccount <- function(dim, i_time, i_age = NULL) {
+    ## 'dim_self'
+    demcheck::err_positive_length(x = dim,
+                                  name = "dim")
+    dim_self <- demcheck::err_tdy_positive_integer_vector(x = dim,
+                                                          name = "dim")
+    ## 'i_time_self'
+    i_time_self <- demcheck::err_tdy_positive_integer_scalar(x = i_time,
+                                                             name = "i_time",
+                                                             null_ok = FALSE)
+    ## 'i_age_self'
+    if (is.null(i_age))
+        i_age_self <- 0L
+    else
+        i_age_self <- demcheck::err_tdy_positive_integer_scalar(x = i_age,
+                                                                name = "i_age",
+                                                                null_ok = TRUE)
+    ## 'dim_self', 'i_time_self'
+    demcheck::err_le_scalar(x1 = i_time_self,
+                            x2 = length(dim_self),
+                            name1 = "i_time",
+                            name2 = "length(dim)")
+    n_time <- dim_self[[i_time_self]]
+    demcheck::err_dim_min_length(length_actual = n_time,
+                                 length_min = 2L,
+                                 name = "time")
+    ## 'dim_self', 'i_age_self'
+    if (i_age_self > 0L)
+        demcheck::err_le_scalar(x1 = i_age_self,
+                                x2 = length(dim_self),
+                                name1 = "i_age",
+                                name2 = "length(dim)")
+    ## 'i_time_self', 'i_age_self'
+    demcheck::err_indices_distinct(indices = list(i_time_self, i_age_self),
+                                   names = c("i_time", "i_age"),
+                                   exclude_zero = TRUE)
+    ## 'n_age_self'
+    if (i_age_self > 0L) {
+        n_age_self <- dim_self[[i_age_self]]
+        demcheck::err_dim_min_length(length_actual = n_age_self,
+                                     length_min = 2L,
+                                     name = "age")
+    }
+    else
+        n_age_self <- 0L
+    ## 'n_dim_self'
+    n_dim_self <- length(dim_self)
+    ## pos_self
+    pos_self <- rep(1L, times = n_dim_self)
+    ## 'stride_self'
+    strides_self <- make_strides(dim_self)
+    ## 'strides_initial'
+    if (n_dim_self > 1L) {
+        dim_initial <- dim_self[-i_time_self]
+        strides_initial <- make_strides(dim_initial)
+    }
+    else
+        strides_initial <- 1L
+    ## 'strides_births'
+    if (i_age_self > 0L)
+        dim_births <- dim_self[-i_age_self]
+    else
+        dim_births <- dim_self
+    strides_births <- make_strides(dim_births)
+    ## 'strides_lower_upper'
+    dim_lower_upper <- replace(dim_self,
+                               list = i_time_self,
+                               values = n_time - 1L)
+    strides_lower_upper <- make_strides(dim_lower_upper)
+    methods::new("SpecIterAccount",
+                 pos_self = pos_self,
+                 dim_self = dim_self,
+                 n_dim_self = n_dim_self,
+                 i_time_self = i_time_self,
+                 i_age_self = i_age_self,
+                 n_age_self = n_age_self,
+                 strides_self = strides_self,
+                 strides_initial = strides_initial,
+                 strides_births = strides_births,
+                 strides_lower_upper = strides_lower_upper)
+}
 
-## #' Create an object of class "SpecIterAccount"
-## #'
-## #' Create an object of class \code{SpecIterAccount} that
-## #' contains the information needed to construct an
-## #' iterator for a particular array. The iterators
-## #' traverse accounts within that array.
-## #'
-## #' @param dim An integer vector. The dimensions of the array.
-## #' @param i_time The index for the time dimension of the array.
-## #' @param i_age The index for the age dimension of the array.
-## #' Equal to \code{NULL} if the array does not have an age dimension.
-## #'
-## #' @return An object of class \code{SpecIterAccount}.
-## #'
-## #' @seealso To create a account iterator from an object of class
-## #' \code{SpecIterAccount}, use function
-## #' \code{\link[=account]{iter_create_account}}.
-## #'
-## #' @examples
-## #' x <- SpecIterAccount(dim = c(4, 2, 3),
-## #'                      i_time = 3,
-## #'                      i_age = 1)
-## #' class(x)
-## #' @export
-## SpecIterAccount <- function(dim, i_time, i_age = NULL) {
-##     ## 'dim'
-##     demcheck::err_positive_length(x = dim,
-##                                   name = "dim")
-##     dim <- demcheck::err_tdy_positive_integer_vector(x = dim,
-##                                                      name = "dim")
-##     ## 'i_time'
-##     i_time <- demcheck::err_tdy_positive_integer_scalar(x = i_time,
-##                                                         name = "i_time",
-##                                                         null_ok = FALSE)
-##     ## 'i_age'
-##     i_age <- demcheck::err_tdy_positive_integer_scalar(x = i_age,
-##                                                        name = "i_age",
-##                                                        null_ok = TRUE)
-##     ## 'dim', 'i_time'
-##     demcheck::err_le_scalar(x1 = i_time,
-##                             x2 = length(dim),
-##                             name1 = "i_time",
-##                             name2 = "length(dim)")
-##     ## 'dim', 'i_age'
-##     if (!is.null(i_age)) {
-##         demcheck::err_le_scalar(x1 = i_age,
-##                                 x2 = length(dim),
-##                                 name1 = "i_age",
-##                                 name2 = "length(dim)")
-##     }
-##     ## 'i_time', 'i_age'
-##     ## (NULLs are zapped)
-##     val <- demcheck::chk_indices_distinct(indices = list(i_time, i_age),
-##                                           names = c("i_time", "i_age"),
-##                                           exclude_zero = FALSE)
-##     if (!isTRUE(val))
-##         return(val)
-##     ## convert NULLs to 0s or NA
-##     if (is.null(i_age))
-##         i_age <- 0L
-##     ## n_time, n_age
-##     n_time <- dim_self[[i_time]]
-##     err_dim_min_length(length_actual = n_time,
-##                        length_min = 2L,
-##                        name = "time")
-##     if (i_age > 0L) {
-##         n_age <- dim_self[[i_age]]
-##         err_dim_min_length(length_actual = n_age,
-##                            length_min = 2L,
-##                            name = "age")
-##     }
-##     else
-##         n_age <- 0L
-##     ## 'stride_self'
-##     strides_self <- make_strides(dim_self)
-##     ## 'strides_init'
-##     if (n_dim_self > 1L) {
-##         dim_init <- dim_self[-i_time]
-##         strides_init <- make_strides(dim_init)
-##     }
-##     else
-##         strides_init <- 1L
-##     ## 'strides_notri'
     
-##     if (age > 0L)
-##         dim_upper_lower <- 
-
-
-
-
-
-
-
-##     ## 'n'
-##     n_time <- dim[[i_time]]
-##     if (i_age > 0L)
-##         n_age <- dim[[i_age]]
-##     else
-##         n_age <- 0L
-##     ## 'strides'
-##     strides <- make_strides(dim)
-##     stride_time <- strides[[i_time]]
-##     if (i_age > 0L)
-##         stride_age <- strides[[i_age]]
-##     else
-##         stride_age  <- 0L
-##     if (i_triangle > 0L)
-##         stride_triangle <- strides[[i_triangle]]
-##     else
-##         stride_triangle  <- 0L
-##     ## 'n_offsets'
-##     n_offsets <- length(offsets)
-##     ## return value
-##     methods::new("SpecIterAccount",
-##                  n_time = n_time,
-##                  n_age = n_age,
-##                  stride_time = stride_time,
-##                  stride_age = stride_age,
-##                  stride_triangle = stride_triangle,
-##                  stop_at_oldest = stop_at_oldest,
-##                  offsets = offsets,
-##                  n_offsets = n_offsets)
-## }
-
-
-
-
-## chk_dim_min_length <- function(length_actual, length_min, dimtype) {
-##     if (length_actual < length_min)
-##         return(gettextf("length of %d dimension [%d] less than %d",
-##                         name, length_actual, length_min))
-##     TRUE
-## }
-    
-    
-
-
-
-
-
-
 #' Create an object of class "SpecIterCohort"
 #'
 #' Create an object of class \code{SpecIterCohort} that
-#' contains the information needed to construct an
-#' iterator for a particular array. The iterators
-#' traverse cohorts within that array.
+#' contains the information needed to construct iterators
+#' to traverse cohorts within arrays with a particular
+#' set of dimensions
 #'
 #' @param dim An integer vector. The dimensions of the array.
 #' @param i_time The index for the time dimension of the array.
