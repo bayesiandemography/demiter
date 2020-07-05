@@ -39,7 +39,7 @@ its dimensions can have length zero.
 If \code{self} has pairs of origin-destination dimensions
 or parent-child dimensions, then the destination dimensions
 or child dimensions are mapped into \code{oth}. The origin
-diemnsions or parent dimensions are dropped. The rule
+dimensions or parent dimensions are dropped. The rule
 that parent dimensions are dropped extends to the age
 dimension when \code{self} is births. Age in this case
 refers to the parent, and so is not included in \code{oth}.

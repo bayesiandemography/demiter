@@ -11,6 +11,17 @@ test_that("SpecIterAccount creates valid SpecIterAccount object with no age", {
     expect_identical(ans@n_age_self, 0L)
 })
 
+test_that("SpecIterAccount creates valid SpecIterAccount object with single dimension", {
+    ans <- SpecIterAccount(dim = 5,
+                           i_time = 1)
+    expect_is(ans, "SpecIterAccount")
+    expect_true(validObject(ans))
+    expect_identical(ans@i_age_self, 0L)
+    expect_identical(ans@strides_self, 1L)
+})
+
+
+
 test_that("SpecIterAccount creates valid SpecIterAccount object with age", {
     ans <- SpecIterAccount(dim = 4:2,
                            i_age = 1,

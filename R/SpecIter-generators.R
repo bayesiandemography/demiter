@@ -74,23 +74,15 @@ SpecIterAccount <- function(dim, i_time, i_age = NULL) {
     ## 'stride_self'
     strides_self <- make_strides(dim_self)
     ## 'strides_initial'
-    if (n_dim_self > 1L) {
-        dim_initial <- dim_self[-i_time_self]
-        strides_initial <- make_strides(dim_initial)
-    }
-    else
-        strides_initial <- 1L
-    ## 'strides_births'
-    if (i_age_self > 0L)
-        dim_births <- dim_self[-i_age_self]
-    else
-        dim_births <- dim_self
-    strides_births <- make_strides(dim_births)
-    ## 'strides_lower_upper'
-    dim_lower_upper <- replace(dim_self,
-                               list = i_time_self,
-                               values = n_time - 1L)
-    strides_lower_upper <- make_strides(dim_lower_upper)
+    dim_initial <- replace(dim_self,
+                           list = i_time_self,
+                           value = 1L)
+    strides_initial <- make_strides(dim_initial)
+    ## 'strides_increments'
+    dim_increments <- replace(dim_self,
+                              list = i_time_self,
+                              values = n_time - 1L)
+    strides_increments <- make_strides(dim_increments)
     methods::new("SpecIterAccount",
                  pos_self = pos_self,
                  dim_self = dim_self,
@@ -100,8 +92,7 @@ SpecIterAccount <- function(dim, i_time, i_age = NULL) {
                  n_age_self = n_age_self,
                  strides_self = strides_self,
                  strides_initial = strides_initial,
-                 strides_births = strides_births,
-                 strides_lower_upper = strides_lower_upper)
+                 strides_increments = strides_increments)
 }
 
     

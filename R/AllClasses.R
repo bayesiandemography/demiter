@@ -13,8 +13,7 @@ setClass("SpecIterAccount",
                    n_age_self = "integer",
                    strides_self = "integer",
                    strides_initial = "integer",
-                   strides_births = "integer",
-                   strides_lower_upper = "integer"),
+                   strides_increments = "integer"),
          validity = function(object) {
              pos_self <- object@pos_self
              dim_self <- object@dim_self
@@ -24,8 +23,7 @@ setClass("SpecIterAccount",
              n_age_self <- object@n_age_self
              strides_self <- object@strides_self
              strides_initial <- object@strides_initial
-             strides_births <- object@strides_births
-             strides_lower_upper = object@strides_lower_upper
+             strides_increments = object@strides_increments
              ## 'pos_self'
              val <- demcheck::chk_pos_initial(x = pos_self,
                                               name = "pos_self",
@@ -64,18 +62,17 @@ setClass("SpecIterAccount",
                  if (!isTRUE(val))
                      return(val)
              }
-             ## 'strides_self', 'strides_initial', 'strides_births', 'strides_lower_upper'
+             ## 'strides_self', 'strides_initial', 'strides_increments'
              for (name in c("strides_self",
                             "strides_initial",
-                            "strides_births",
-                            "strides_lower_upper")) {
+                            "strides_increments")) {
                  x <- slot(object, name)
                  val <- demcheck::chk_positive_vector(x = x,
                                                       name = name)
                  if (!isTRUE(val))
                      return(val)
-                 val <- demcheck::chk_strictly_increasing(x = x,
-                                                          name = name)
+                 val <- demcheck::chk_increasing(x = x,
+                                                 name = name)
                  if (!isTRUE(val))
                      return(val)
              }
@@ -99,40 +96,19 @@ setClass("SpecIterAccount",
                                                 name2 = "n_dim_self")
              if (!isTRUE(val))
                  return(val)
-             ## 'strides_self' and 'n_dim_self'
-             val <- demcheck::chk_length_equals(x1 = strides_self,
-                                                x2 = n_dim_self,
-                                                name1 = "strides_self",
-                                                name2 = "n_dim_self")
-             if (!isTRUE(val))
-                 return(val)
-             ## 'strides_initial' and 'n_dim_self'
-             val <- demcheck::chk_length_equals(x1 = strides_initial,
-                                                x2 = n_dim_self - 1L,
-                                                name1 = "strides_initial",
-                                                name2 = "n_dim_self - 1")
-             if (!isTRUE(val))
-                 return(val)
-             ## 'strides_births' and 'n_dim_self'
-             if (i_age_self > 0L)
-                 val <- demcheck::chk_length_equals(x1 = strides_births,
-                                                    x2 = n_dim_self - 1L,
-                                                    name1 = "strides_births",
-                                                    name2 = "n_dim_self - 1")
-             else
-                 val <- demcheck::chk_length_equals(x1 = strides_births,
+
+             ## 'n_dim_self and 'strides_self', 'strides_initial', 'strides_increments'
+             for (name in c("strides_self",
+                            "strides_initial",
+                            "strides_increments")) {
+                 x <- slot(object, name)
+                 val <- demcheck::chk_length_equals(x1 = x,
                                                     x2 = n_dim_self,
-                                                    name1 = "strides_births",
+                                                    name1 = name,
                                                     name2 = "n_dim_self")
-             if (!isTRUE(val))
-                 return(val)
-             ## 'strides_lower_upper' and 'n_dim_self'
-             val <- demcheck::chk_length_equals(x1 = strides_lower_upper,
-                                                x2 = n_dim_self,
-                                                name1 = "strides_lower_upper",
-                                                name2 = "n_dim_self")
-             if (!isTRUE(val))
-                 return(val)
+                 if (!isTRUE(val))
+                     return(val)
+             }
              TRUE
           })
 
@@ -456,8 +432,8 @@ setClass("SpecIterIncrement",
                                                   name = "strides_oth")
              if (!isTRUE(val))
                  return(val)
-             val <- demcheck::chk_strictly_increasing(x = strides_oth,
-                                                      name = "strides_oth")
+             val <- demcheck::chk_increasing(x = strides_oth,
+                                             name = "strides_oth")
              if (!isTRUE(val))
                  return(val)
              ## 'i_comp_type_self'

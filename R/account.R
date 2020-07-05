@@ -18,7 +18,7 @@
 #'   }
 #'   \item{\code{initial}}{An array of initial population counts.
 #'     \code{initial} has the same dimensions as \code{self},
-#'     except that it does not have a time dimension.
+#'     except that its time dimension has length 1.
 #'   }
 #'   \item{\code{births}}{An array of birth counts. Any dimensions with
 #'     dimtype \code{"age"} or \code{"parent"} have been collapsed
@@ -57,7 +57,6 @@
 #'   \item \code{self}
 #'   \item \code{self} (oldest age group only)
 #'   \item \code{initial} (first time point only)
-#'   \item \code{births}
 #'   \item \code{no_triangle}
 #'   \item \code{lower_triangle}
 #'   \item \code{upper_triangle}
@@ -71,15 +70,18 @@
 #' are typically assembled using a \code{\link{increment}} iterator.
 #'
 #' In some applications, the demographic account may not have
-#' births, or may not have increments or decrements, so
-#' arrays \code{births}, \code{no_triangle}, \code{lower_triangle},
+#' increments or decrements, so arrays
+#' \code{no_triangle}, \code{lower_triangle},
 #' or \code{upper_triangle} may not exist. The account iterator
 #' does not know or care about the existence of the arrays: it
-#' returns indices anyway. It is the responsibility of the calling
-#' function to decide what to do with these indices.
+#' returns indices for these arrays anyway.
+#' The calling function is responsible for deciding whether to
+#' process these indices.
 #'
 #' @param spec An object of class \code{\link{SpecIterAccount}}.
 #' @param iter An account iterator.
+#'
+#' @return An integer vector of length 7.
 #'
 #' @seealso \code{\link{SpecIterAccount}}, \code{\link{cohort}},
 #' \code{\link{collapse}}, \code{\link{increment}}
@@ -100,7 +102,7 @@ NULL
 #' @rdname account
 #' @export
 iter_create_account <- function(spec) {
-    ans <- new.env(size = 12L)
+    ans <- new.env(size = 11L)
     ans$pos_self <- spec@pos_self
     ans$dim_self <- spec@dim_self
     ans$n_dim_self <- spec@n_dim_self
@@ -109,8 +111,7 @@ iter_create_account <- function(spec) {
     ans$n_age_self <- spec@n_age_self
     ans$strides_self <- spec@strides_self
     ans$strides_initial <- spec@strides_initial
-    ans$strides_births <- spec@strides_births
-    ans$strides_lower_upper <- spec@strides_lower_upper
+    ans$strides_increments <- spec@strides_increments
     ans$has_next <- TRUE
     ans$is_first <- TRUE
     ans
@@ -127,13 +128,11 @@ iter_next_account <- function(iter) {
     n_age_self <- iter$n_age_self
     strides_self <- iter$strides_self
     strides_initial <- iter$strides_initial
-    strides_births <- iter$strides_births
-    strides_lower_upper <- iter$strides_lower_upper
+    strides_increments <- iter$strides_increments
     is_first <- iter$is_first
     i_self_1 <- 0L
     i_self_2 <- 0L
     i_initial <- 0L
-    i_births <- 0L
     i_no_triangle <- 0L
     i_lower_triangle <- 0L
     i_upper_triangle_1 <- 0L
@@ -154,22 +153,17 @@ iter_next_account <- function(iter) {
                 pos_self[[i_dim_self]] <- 1L
         }
     }
-    ## Step 2: Calculate indices 'self_1', 'self_2', 'initial', 'births',
+    ## Step 2: Calculate indices 'self_1', 'self_2', 'initial', 
     ## 'no_triangle', 'lower_triangle', 'upper_triangle_1', 'upper_triangle_2'
     pos_time <- pos_self[[i_time_self]]
     is_first_time_point <- pos_time == 1L
     if (is_first_time_point) {
-        ## initial population - remove time dimension
+        ## initial population
         i_initial <- 1L
         for (i_dim_self in seq_len(n_dim_self)) {
-            is_dim_time <- i_dim_self == i_time_self
-            if (!is_dim_time) {
-                val_pos_initial <- pos_self[[i_dim_self]]
-                passed_dim_time <- i_dim_self > i_time_self
-                i_dim_initial <- i_dim_self - passed_dim_time
-                stride_initial  <- strides_initial[[i_dim_initial]]
-                i_initial <- i_initial + (val_pos_initial - 1L) * stride_initial
-            }
+            val_pos_initial <- pos_self[[i_dim_self]]
+            stride_initial  <- strides_initial[[i_dim_self]]
+            i_initial <- i_initial + (val_pos_initial - 1L) * stride_initial
         }
     }
     else {
@@ -178,82 +172,58 @@ iter_next_account <- function(iter) {
             pos_age <- pos_self[[i_age_self]]
             is_youngest <- pos_age == 1L
             is_oldest <- pos_age == n_age_self
-            ## previous population value for cohort - subtract 1 from age and time
-            i_self_1 <- 1L
-            for (i_dim_self in seq_len(n_dim_self)) {
-                val_pos_self <- pos_self[[i_dim_self]]
-                is_dim_time_or_age <- (i_dim_self == i_time_self) || (i_dim_self == i_age_self)
-                val_pos_self_1 <- val_pos_self - is_dim_time_or_age
-                stride_self_1 <- strides_self[[i_dim_self]]
-                i_self_1 <- i_self_1 + (val_pos_self_1 - 1L) * stride_self_1
-            }
             ## increments in lower triangle - subtract 1 from time
             i_lower_triangle <- 1L
             for (i_dim_self in seq_len(n_dim_self)) {
                 val_pos_self <- pos_self[[i_dim_self]]
                 is_dim_time <- i_dim_self == i_time_self
-                val_pos_lower_triangle <- val_pos_self - is_dim_time
-                stride_lower_upper <- strides_lower_upper[[i_dim_self]]
+                val_pos_increments <- val_pos_self - is_dim_time
+                stride_increments <- strides_increments[[i_dim_self]]
                 i_lower_triangle <- (i_lower_triangle
-                    + (val_pos_lower_triangle - 1L) * stride_lower_upper)
+                    + (val_pos_increments - 1L) * stride_increments)
             }
-            if (is_youngest) {
-                ## births - ignore age and subtract 1 from time
-                i_births <- 1L
+            if (!is_youngest) {
+                ## previous population value for cohort - subtract 1 from age and time
+                i_self_1 <- 1L
                 for (i_dim_self in seq_len(n_dim_self)) {
-                    is_dim_age <- i_dim_self == i_age_self
-                    if (!is_dim_age) {
-                        val_pos_self <- pos_self[[i_dim_self]]
-                        is_dim_time <- i_dim_self == i_time_self
-                        val_pos_births <- val_pos_self - is_dim_time
-                        passed_dim_age <- i_dim_self > i_age_self
-                        i_dim_births <- i_dim_self - passed_dim_age
-                        stride_births <- strides_births[[i_dim_births]]
-                        i_births <- i_births  + (val_pos_births - 1L) * stride_births
-                    }
+                    val_pos_self <- pos_self[[i_dim_self]]
+                    is_dim_time_or_age <- (i_dim_self == i_time_self) || (i_dim_self == i_age_self)
+                    val_pos_self_1 <- val_pos_self - is_dim_time_or_age
+                    stride_self_1 <- strides_self[[i_dim_self]]
+                    i_self_1 <- i_self_1 + (val_pos_self_1 - 1L) * stride_self_1
                 }
-            }
-            else {
                 ## increments in upper triangle - subtract 1 from age and time
-                stride_age_lower_upper <- strides_lower_upper[[i_age_self]]
-                i_upper_triangle <- i_lower_triangle - stride_age_lower_upper
+                stride_age_increments <- strides_increments[[i_age_self]]
+                i_upper_triangle_1 <- i_lower_triangle - stride_age_increments
             }
             if (is_oldest) {
                 ## previous population value for oldest age group - subtract 1 from time
-                i_self_2 <- 1L
-                for (i_dim_self in seq_len(n_dim_self)) {
-                    val_pos_self <- pos_self[[i_dim_self]]
-                    is_dim_time <- i_dim_self == i_time_self
-                    val_pos_self_2 <- val_pos_self - is_dim_time
-                    stride_self_2 <- strides_self[[i_dim_self]]
-                    i_self_2 <- i_self_2 + (val_pos_self_2 - 1L) * stride_self_2
-                }
+                stride_age_self <- strides_self[[i_age_self]]
+                i_self_2 <- i_self_1 + stride_age_self
                 ## increments from upper triangle - same index as lower triangle
-                i_upper_2 <- i_lower_triangle
+                i_upper_triangle_2 <- i_lower_triangle
             }
         }
         else {
-            ## with no age, 'births' and 'no_triangle' have same dimensions,
-            ## and both have same index as previous value of 'self'
+            ## 'self_1' and 'no_triangle' - have some position
+            ## but different strides (since different time dimensions) 
             i_self_1 <- 1L
-            i_births <- 1L
-            for (i in seq_len(n_dim_self)) {
+            i_no_triangle <- 1L
+            for (i_dim_self in seq_len(n_dim_self)) {
                 val_pos_self <- pos_self[[i_dim_self]]
                 is_dim_time <- i_dim_self == i_time_self
-                val_pos_self_1 <- val_pos_self - is_dim_time
+                val_pos <- val_pos_self - is_dim_time
                 stride_self_1 <- strides_self[[i_dim_self]]
-                stride_births <- strides_births[[i_dim_self]]
-                i_self_1 <- i_self_1 + (val_pos_self_1 - 1L) * stride_self_1
-                i_births <- i_births + (val_pos_self_1 - 1L) * stride_births
+                stride_no_triangle <- strides_increments[[i_dim_self]]
+                i_self_1 <- i_self_1 + (val_pos - 1L) * stride_self_1
+                i_no_triangle <- i_no_triangle + (val_pos - 1L) * stride_no_triangle
             }
-            i_no_triangle <- i_births
         }
     }
     ## Step 3: Collect and return
     i_vec <- c(i_self_1,
                i_self_2,
                i_initial,
-               i_births,
                i_no_triangle,
                i_lower_triangle,
                i_upper_triangle_1,

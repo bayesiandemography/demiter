@@ -18,6 +18,9 @@ iter_has_next_account(iter)
 
 \item{iter}{An account iterator.}
 }
+\value{
+An integer vector of length 7.
+}
 \description{
 An account iterator traverses an array of population counts,
 returning the indices of arrays that contribute to each cell,
@@ -37,7 +40,7 @@ The arrays contributing to each cell are as follows:
   }
   \item{\code{initial}}{An array of initial population counts.
     \code{initial} has the same dimensions as \code{self},
-    except that it does not have a time dimension.
+    except that its time dimension has length 1.
   }
   \item{\code{births}}{An array of birth counts. Any dimensions with
     dimtype \code{"age"} or \code{"parent"} have been collapsed
@@ -76,7 +79,6 @@ arrays:
   \item \code{self}
   \item \code{self} (oldest age group only)
   \item \code{initial} (first time point only)
-  \item \code{births}
   \item \code{no_triangle}
   \item \code{lower_triangle}
   \item \code{upper_triangle}
@@ -90,12 +92,13 @@ Arrays \code{no_triangle}, \code{lower_triangle} and \code{upper_triangle}
 are typically assembled using a \code{\link{increment}} iterator.
 
 In some applications, the demographic account may not have
-births, or may not have increments or decrements, so
-arrays \code{births}, \code{no_triangle}, \code{lower_triangle},
+increments or decrements, so arrays
+\code{no_triangle}, \code{lower_triangle},
 or \code{upper_triangle} may not exist. The account iterator
 does not know or care about the existence of the arrays: it
-returns indices anyway. It is the responsibility of the calling
-function to decide what to do with these indices.
+returns indices for these arrays anyway.
+The calling function is responsible for deciding whether to
+process these indices.
 }
 \examples{
 spec <- SpecIterAccount(dim = c(3, 3, 2, 4),
