@@ -110,6 +110,53 @@ test_that("account iterator works on array with two dimensions, time second, inc
 })
 
 
+test_that("account iterator works on array with three dimensions, time second, including age", {
+    spec <- SpecIterAccount(dim = c(2, 2, 2),
+                            i_time = 2,
+                            i_age = 3)
+    iter <- iter_create_account(spec)
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 1L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 2L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 0L, 0L, 1L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 0L, 0L, 2L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 3L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 4L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(1L, 5L, 0L, 0L, 3L, 1L, 3L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(2L, 6L, 0L, 0L, 4L, 2L, 4L))
+    expect_false(iter_has_next_account(iter))
+})
+
+test_that("account iterator works on array with two dimensions, time second, three age groups", {
+    spec <- SpecIterAccount(dim = c(3, 2),
+                            i_time = 2,
+                            i_age = 1)
+    iter <- iter_create_account(spec)
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 1L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 2L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 3L, 0L, 0L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(0L, 0L, 0L, 0L, 1L, 0L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(1L, 0L, 0L, 0L, 2L, 1L, 0L))
+    expect_true(iter_has_next_account(iter))
+    expect_identical(iter_next_account(iter), c(2L, 3L, 0L, 0L, 3L, 2L, 3L))
+    expect_false(iter_has_next_account(iter))
+})
+
+
+
+
 
 
 

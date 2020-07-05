@@ -76,7 +76,7 @@ SpecIterAccount <- function(dim, i_time, i_age = NULL) {
     ## 'strides_initial'
     dim_initial <- replace(dim_self,
                            list = i_time_self,
-                           value = 1L)
+                           values = 1L)
     strides_initial <- make_strides(dim_initial)
     ## 'strides_increments'
     dim_increments <- replace(dim_self,
