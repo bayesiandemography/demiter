@@ -31,12 +31,6 @@ library(demiter)
 ![](export1.png)
 
 
-```{r}
-map
-```
-
-
-
 ![](export2.png)
 
 
